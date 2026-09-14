@@ -1,55 +1,54 @@
 import re
+import unicodedata
 
-# A basic list of Hindi stopwords (can be expanded). 
-# Note: Words like 'नहीं', 'ना', 'मत' are EXCLUDED from this list because they carry crucial sentiment negation.
-HINDI_STOPWORDS = {
-    'मैं', 'मुझे', 'मेरा', 'अपने', 'हमने', 'हमारा', 'अपना', 'हम', 'आप', 'आपका', 'तुम्हारा',
-    'अपने', 'स्वयं', 'वह', 'इसे', 'उसके', 'खुद', 'कि', 'जो', 'किसी', 'किस', 'क्या', 'कौन',
-    'कौनसा', 'और', 'लेकिन', 'अगर', 'या', 'क्योंकि', 'जैसा', 'जब', 'तक', 'जबकि', 'का', 'की',
-    'के', 'है', 'हैं', 'था', 'थी', 'थे', 'होना', 'गया', 'किया', 'कर', 'सकता', 'चाहिए', 'वाला',
-    'वाले', 'वाली', 'इन', 'उन', 'इनके', 'उनके', 'यहाँ', 'वहाँ', 'तो', 'ही', 'भी', 'पर', 'में',
-    'से', 'को', 'ये', 'वो', 'ये', 'वे'
+# Hinglish setup
+hinglish_stopwords = {
+    "hai", "hain", "ho", "tha", "thi", "the", "h",
+    "ka", "ki", "ke", "ko", "se", "me", "mein",
+    "par", "pe", "aur", "ya", "ye", "yah", "woh",
+    "wo", "ek", "to", "bhi", "hi", "jo", "is",
+    "us", "kya", "ab", "phir", "bas", "sirf",
+    "bahut", "bohot"
 }
 
-def is_hindi_text(text: str) -> bool:
-    """
-    Checks if the text contains a reasonable amount of Devanagari characters.
-    This acts as a transparent Hindi language filter.
-    """
-    if not isinstance(text, str) or not text.strip():
-        return False
-    
-    # Range for Devanagari characters: \u0900-\u097F
-    devanagari_chars = re.findall(r'[\u0900-\u097F]', text)
-    
-    # A simple heuristic: if it contains at least a few Devanagari characters, consider it Hindi.
-    # In a real academic project, you might calculate a ratio.
-    return len(devanagari_chars) >= 3
+negations = {
+    "nahi", "nahin", "na", "mat",
+    "नहीं", "नहि", "ना", "मत"
+}
 
-def preprocess_hindi_text(text: str) -> str:
+def is_devanagari(text: str) -> bool:
     """
-    Preprocesses Hindi text for sentiment analysis.
-    This logic MUST perfectly match the logic used during offline model training.
+    Returns True if at least 30% of the non-whitespace characters are Devanagari.
     """
-    if not isinstance(text, str):
-        return ""
+    if not text: return False
+    chars = [c for c in str(text) if not c.isspace()]
+    if not chars: return False
+    
+    devanagari_count = sum("\u0900" <= c <= "\u097F" for c in chars)
+    return (devanagari_count / len(chars)) >= 0.30
 
-    # 1. Remove URLs
-    text = re.sub(r'http\S+|www\S+', '', text)
-    
-    # 2. Remove English letters and numbers (keeping only Hindi)
-    text = re.sub(r'[a-zA-Z0-9]', '', text)
-    
-    # 3. Remove punctuation, emojis, and special characters (keeping only Devanagari script and whitespace)
-    text = re.sub(r'[^\u0900-\u097F\s]', '', text)
-    
-    # 4. Tokenization (basic whitespace split)
-    tokens = text.split()
-    
-    # 5. Remove Hindi stop words
-    filtered_tokens = [word for word in tokens if word not in HINDI_STOPWORDS]
-    
-    # 6. Normalize whitespace
-    processed_text = ' '.join(filtered_tokens).strip()
-    
-    return processed_text
+def preprocess_hinglish(text: str) -> str:
+    if not isinstance(text, str) or not text: return ""
+    text = unicodedata.normalize("NFKC", text)
+    text = re.sub(r"https?://\S+|www\.\S+", " ", text)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"@\w+", " ", text)
+    text = re.sub(r"#", "", text)
+    text = re.sub(r"[^A-Za-z0-9\u0900-\u097F\s]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip().lower()
+    return text
+
+def preprocess_hinglish_final(text: str) -> str:
+    cleaned = preprocess_hinglish(text)
+    tokens = cleaned.split()
+    return " ".join(t for t in tokens if t not in hinglish_stopwords or t in negations)
+
+def preprocess_pure_hindi(text: str) -> str:
+    if not isinstance(text, str) or not text: return ""
+    text = unicodedata.normalize("NFKC", text)
+    text = re.sub(r"https?://\S+|www\.\S+", " ", text)
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = re.sub(r"@\w+", " ", text)
+    text = re.sub(r"[^\u0900-\u097F\s]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text

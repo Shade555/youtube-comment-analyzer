@@ -1,34 +1,22 @@
 from pydantic import BaseModel
-from typing import List, Optional, Dict
-
-class PredictRequest(BaseModel):
-    text: str
-
-class PredictResponse(BaseModel):
-    comment: str
-    processed_text: str
-    sentiment: str
-    confidence: float
+from typing import List, Dict
 
 class YouTubeAnalyzeRequest(BaseModel):
     url: str
 
-class SentimentDistribution(BaseModel):
-    positive: int
-    negative: int
-    neutral: int
-
-class Percentages(BaseModel):
-    positive: float
-    negative: float
-    neutral: float
+class CommentAnalysis(BaseModel):
+    text: str
+    processed_text: str
+    emotion_model: str
+    emotions: List[str]
+    sarcasm_label: int
+    sarcasm_probability: float
 
 class YouTubeAnalyzeResponse(BaseModel):
     video_id: str
     total_comments: int
-    hindi_comments: int
     analyzed_comments: int
-    sentiment_distribution: SentimentDistribution
-    percentages: Percentages
-    average_confidence: float
-    comments: List[PredictResponse]
+    emotion_distribution: Dict[str, int]
+    sarcasm_rate: float
+    model_usage: Dict[str, int]
+    comments: List[CommentAnalysis]

@@ -1,10 +1,20 @@
 import { Link, ArrowRight } from "lucide-react";
+import { useState } from "react";
 
 interface YouTubeInputProps {
   onLogout?: () => void;
+  onAnalyze?: (url: string) => void;
 }
 
-export function YouTubeInput({ onLogout }: YouTubeInputProps) {
+export function YouTubeInput({ onLogout, onAnalyze }: YouTubeInputProps) {
+  const [url, setUrl] = useState("");
+
+  const handleAnalyze = () => {
+    if (onAnalyze && url) {
+      onAnalyze(url);
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full mb-6 gap-4">
       <div className="text-xl font-semibold text-white tracking-wide">
@@ -20,9 +30,15 @@ export function YouTubeInput({ onLogout }: YouTubeInputProps) {
             type="text"
             className="block w-full pl-10 pr-3 py-2 border border-[#262837] rounded-lg leading-5 bg-[#14151f] text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             placeholder="Paste YouTube video URL here..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
           />
         </div>
-        <button className="flex items-center justify-center gap-2 bg-[#2a2d40] hover:bg-[#343851] border border-[#3b405a] text-white px-4 py-2 rounded-lg text-sm transition-colors w-full sm:w-auto">
+        <button 
+          onClick={handleAnalyze}
+          className="flex items-center justify-center gap-2 bg-[#2a2d40] hover:bg-[#343851] border border-[#3b405a] text-white px-4 py-2 rounded-lg text-sm transition-colors w-full sm:w-auto"
+        >
           <ArrowRight size={16} />
           Analyze
         </button>

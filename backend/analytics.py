@@ -1,33 +1,42 @@
 from typing import List, Dict
 
 def generate_analytics(predictions: List[dict]) -> dict:
-    """
-    Calculates summary statistics and analytics based on sentiment predictions.
-    """
     total = len(predictions)
     if total == 0:
         return {
-            "sentiment_distribution": {"positive": 0, "negative": 0, "neutral": 0},
-            "percentages": {"positive": 0.0, "negative": 0.0, "neutral": 0.0},
-            "average_confidence": 0.0
+            "emotion_distribution": {},
+            "sarcasm_rate": 0.0,
+            "model_usage": {"Pure Hindi": 0, "Hinglish": 0}
         }
-
-    positive_count = sum(1 for p in predictions if p["sentiment"] == "positive")
-    negative_count = sum(1 for p in predictions if p["sentiment"] == "negative")
-    neutral_count = sum(1 for p in predictions if p["sentiment"] == "neutral")
+        
+    emotion_dist = {}
+    sarcastic_count = 0
+    hindi_model_count = 0
+    hinglish_model_count = 0
     
-    avg_conf = sum(p["confidence"] for p in predictions) / total
-
+    for p in predictions:
+        # Tally emotions (multi-label)
+        for emotion in p["emotions"]:
+            emotion_dist[emotion] = emotion_dist.get(emotion, 0) + 1
+            
+        # Tally sarcasm
+        if p["sarcasm_label"] == 1:
+            sarcastic_count += 1
+            
+        # Tally model routing
+        if p["emotion_model"] == "Pure Hindi":
+            hindi_model_count += 1
+        elif p["emotion_model"] == "Hinglish":
+            hinglish_model_count += 1
+            
+    # Sort emotions by frequency
+    emotion_dist = dict(sorted(emotion_dist.items(), key=lambda item: item[1], reverse=True))
+    
     return {
-        "sentiment_distribution": {
-            "positive": positive_count,
-            "negative": negative_count,
-            "neutral": neutral_count
-        },
-        "percentages": {
-            "positive": round((positive_count / total) * 100, 1),
-            "negative": round((negative_count / total) * 100, 1),
-            "neutral": round((neutral_count / total) * 100, 1)
-        },
-        "average_confidence": round(avg_conf, 2)
+        "emotion_distribution": emotion_dist,
+        "sarcasm_rate": round((sarcastic_count / total) * 100, 1),
+        "model_usage": {
+            "Pure Hindi": hindi_model_count,
+            "Hinglish": hinglish_model_count
+        }
     }

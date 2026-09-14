@@ -1,16 +1,14 @@
 @import "tailwindcss";
 
-body {
-  background-color: #0f1016;
-  color: #f8fafc;
-
 @theme {
-  --color-primary: #1e1f2b; /* Sidebar / Card BG */
-  --color-background: #0f1016; /* Main BG */
-  
+  --color-primary: #1e1f2b;
+  /* Sidebar / Card BG */
+  --color-background: #0f1016;
+  /* Main BG */
+
   --color-text-main: #f8fafc;
   --color-text-muted: #94a3b8;
-  
+
   --color-positive: #22c55e;
   --color-positive-bg: rgba(34, 197, 94, 0.1);
   --color-neutral: #eab308;
@@ -18,7 +16,8 @@ body {
   --color-negative: #ef4444;
   --color-negative-bg: rgba(239, 68, 68, 0.1);
 
-  --color-accent: #6366f1; /* Button blue/indigo */
+  --color-accent: #6366f1;
+  /* Button blue/indigo */
 }
 
 body {
@@ -33,13 +32,16 @@ body {
   width: 4px;
   height: 4px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #1e1f2b; 
+  background: #1e1f2b;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #334155; 
+  background: #334155;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569; 
+  background: #475569;
 }
