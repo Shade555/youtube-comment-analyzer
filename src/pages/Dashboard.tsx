@@ -5,10 +5,14 @@ import { SentimentDistribution } from "../components/SentimentDistribution";
 import { WordCloud } from "../components/WordCloud";
 import { CommentsSection } from "../components/CommentsSection";
 
-export function Dashboard() {
+interface DashboardProps {
+  onLogout: () => void;
+}
+
+export function Dashboard({ onLogout }: DashboardProps) {
   return (
     <div className="w-full max-w-[1400px] mx-auto pb-10">
-      <YouTubeInput />
+      <YouTubeInput onLogout={onLogout} />
       
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 mb-4">
         <div className="flex flex-col gap-4">

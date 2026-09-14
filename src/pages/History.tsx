@@ -2,7 +2,7 @@ export function History() {
   return (
     <div className="w-full max-w-[1400px] mx-auto pb-10">
       <h1 className="text-2xl font-semibold text-white mb-6">Analysis History</h1>
-      <div className="bg-[#14151f] rounded-xl border border-[#262837] p-8 text-center">
+      <div className="bg-[#14151f]/80 backdrop-blur-xl rounded-xl border border-[#262837]/60 p-8 text-center shadow-lg">
         <p className="text-gray-500">No history available yet.</p>
       </div>
     </div>

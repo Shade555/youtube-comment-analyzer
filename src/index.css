@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+body {
+  background-color: #0f1016;
+  color: #f8fafc;
+
 @theme {
   --color-primary: #1e1f2b; /* Sidebar / Card BG */
   --color-background: #0f1016; /* Main BG */
@@ -25,13 +29,12 @@ body {
   scrollbar-width: thin;
 }
 
-/* Scrollbar styling for dark theme */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-primary); 
+  background: #1e1f2b; 
 }
 ::-webkit-scrollbar-thumb {
   background: #334155; 

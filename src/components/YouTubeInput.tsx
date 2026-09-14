@@ -1,6 +1,10 @@
 import { Link, ArrowRight } from "lucide-react";
 
-export function YouTubeInput() {
+interface YouTubeInputProps {
+  onLogout?: () => void;
+}
+
+export function YouTubeInput({ onLogout }: YouTubeInputProps) {
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full mb-6 gap-4">
       <div className="text-xl font-semibold text-white tracking-wide">
@@ -31,7 +35,10 @@ export function YouTubeInput() {
         <div className="flex items-center gap-1 text-sm text-gray-300 cursor-pointer hover:text-white">
           Nadia Rachal
         </div>
-        <button className="px-3 py-1.5 ml-2 border border-red-500 text-red-500 bg-[#0f1016] hover:bg-red-500/10 rounded-lg text-sm font-medium transition-colors">
+        <button 
+          onClick={onLogout}
+          className="px-3 py-1.5 ml-2 border border-red-500 text-red-500 bg-[#0f1016] hover:bg-red-500/10 rounded-lg text-sm font-medium transition-colors"
+        >
           Log out
         </button>
       </div>
