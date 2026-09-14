@@ -3,6 +3,27 @@
 body {
   background-color: #0f1016;
   color: #f8fafc;
+
+@theme {
+  --color-primary: #1e1f2b; /* Sidebar / Card BG */
+  --color-background: #0f1016; /* Main BG */
+  
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  
+  --color-positive: #22c55e;
+  --color-positive-bg: rgba(34, 197, 94, 0.1);
+  --color-neutral: #eab308;
+  --color-neutral-bg: rgba(234, 179, 8, 0.1);
+  --color-negative: #ef4444;
+  --color-negative-bg: rgba(239, 68, 68, 0.1);
+
+  --color-accent: #6366f1; /* Button blue/indigo */
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-main);
   font-family: Inter, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   scrollbar-width: thin;
