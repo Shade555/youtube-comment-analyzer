@@ -1,7 +1,7 @@
 # Project Progress: Hindi YouTube Comment Sentiment Analysis
 
 ## Overall Status
-Backend Initialization Phase (30%)
+Machine Learning Phase Completed / Backend Integration Pending (45%)
 
 ## Completed
 
@@ -9,54 +9,36 @@ Backend Initialization Phase (30%)
 - [x] Project progress tracking initialized (`progress.md` created)
 - [x] Frontend initialized (React + Vite project existing at root)
 - [x] Folder structure created (`data`, `model`, `backend`)
-- [x] Backend initialized (`main.py`, `config.py`, `schemas.py`)
-- [x] Preprocessing implemented (`preprocessing.py`)
-- [x] Sentiment inference logic written (`sentiment.py`)
-- [x] YouTube API integration written (`youtube.py`)
-- [x] Requirements defined (`backend/requirements.txt`)
-- [ ] Dataset integrated
-- [ ] Offline TF-IDF vectorizer trained (Colab)
-- [ ] Offline Logistic Regression trained (Colab)
-- [ ] Model artifacts exported and placed in `/model`
-- [ ] Dashboard UI development
-- [ ] CSV export
-- [ ] Deployment
+- [x] Dataset integrated (Hinglish Emotion, EmoHi, Sarcasm)
+- [x] Offline ML Pipeline Trained (Colab)
+- [x] Hinglish Emotion Model (Linear SVM)
+- [x] Pure Hindi Emotion Model (One-vs-Rest Linear SVM, Multi-label)
+- [x] Sarcasm Detection Model (Logistic Regression)
+- [x] Unified Prediction Logic (Language Routing)
+- [x] Model artifacts exported and placed in `/model` (.zip created)
 
 ## Current Task
-The backend API logic has been completely written. Awaiting the trained offline model artifacts from Google Colab to be placed into the `model/` folder. 
+Updating the FastAPI backend to load and serve the three new models (Hinglish Emotion, Pure Hindi Emotion, and Sarcasm) instead of the original simple 3-class sentiment model.
 
 ## Last Completed Work
-Created the FastAPI architecture (`main.py`), Pydantic schemas (`schemas.py`), configuration (`config.py`), text preprocessing pipeline identical to training (`preprocessing.py`), machine learning inference loader (`sentiment.py`), and the YouTube Data API v3 fetcher (`youtube.py`).
+The user successfully trained and exported a sophisticated three-model NLP architecture in Google Colab. The pipeline handles multi-label Pure Hindi emotion (28 classes), Hinglish emotion (10 classes), and independent Sarcasm detection.
 
 ## Next Steps
-1. The user will train the model on Google Colab using the provided steps.
-2. The user will download `tfidf_vectorizer.pkl`, `sentiment_model.pkl`, and `metrics.json` and place them in the `model/` folder.
-3. Test the FastAPI backend (`uvicorn backend.main:app --reload`).
-4. Begin writing the React frontend components in the `src/` folder.
+1. Unzip the trained model artifacts into the `model/` directory.
+2. Rewrite `backend/sentiment.py` to load all three models, vectorizers, the MultiLabelBinarizer, the JSON mapping, and the threshold.
+3. Rewrite `backend/schemas.py` and `backend/analytics.py` to accommodate the new multi-label and sarcasm data structures (instead of just Positive/Negative/Neutral).
+4. Update the React UI (`src/pages`, `src/components`) to visualize emotions (radar charts, bar charts) and sarcasm metrics.
 
 ## Known Issues
-- The backend will use mock data for predictions until the actual `.pkl` files are placed inside the `model/` directory.
+- The Pure Hindi Emotion model has low performance (Macro F1 ~23.6%) due to high class imbalance in the 28-label EmoHi dataset. It works but requires future tuning.
 
 ## Decisions Made
-- `youtube.py` handles API pagination natively to fetch a configurable maximum number of comments.
-- `sentiment.py` gracefully degrades to mock predictions if the model is missing, allowing frontend development to proceed in parallel.
-- `preprocessing.py` uses a simple transparent Devanagari character count heuristic to filter non-Hindi comments before processing.
+- Pivot from 3-class Sentiment (Pos/Neg/Neu) to a robust Emotion & Sarcasm architecture.
+- Added language routing: >30% Devanagari goes to the Pure Hindi model; otherwise, Hinglish.
 
 ## Files Changed Recently
-- `backend/requirements.txt` (Created)
-- `backend/config.py` (Created)
-- `backend/schemas.py` (Created)
-- `backend/preprocessing.py` (Created)
-- `backend/sentiment.py` (Created)
-- `backend/youtube.py` (Created)
-- `backend/analytics.py` (Created)
-- `backend/main.py` (Created)
-- `.env.example` (Created)
-- `.gitignore` (Created/Updated)
 - `progress.md` (Updated)
-
-## Testing Status
-- Backend unit testing pending.
+- `context.md` (Updated)
 
 ## Environment
 - OS: Windows
