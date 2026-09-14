@@ -1,0 +1,22 @@
+{
+  "random_state": 42,
+  "hinglish": {
+    "best_model": "Linear SVM",
+    "accuracy": 0.5680454176804541,
+    "macro_f1": 0.5682178027302993,
+    "weighted_f1": 0.5671204708961224
+  },
+  "pure_hindi": {
+    "model": "One-vs-Rest Linear SVM",
+    "threshold": 0.15,
+    "hamming_loss": 0.06780185350955716,
+    "micro_f1": 0.31894214876033056,
+    "macro_f1": 0.23637935559906956,
+    "jaccard": 0.2671034963930283
+  },
+  "sarcasm": {
+    "model": "Logistic Regression",
+    "accuracy": 0.9301719645648775,
+    "macro_f1": 0.9279499645838376
+  }
+}
