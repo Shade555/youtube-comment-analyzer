@@ -1,5 +1,6 @@
 import { Link, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 interface YouTubeInputProps {
   onLogout?: () => void;
@@ -8,6 +9,18 @@ interface YouTubeInputProps {
 
 export function YouTubeInput({ onLogout, onAnalyze }: YouTubeInputProps) {
   const [url, setUrl] = useState("");
+  const { user, isGuest } = useAuth();
+
+  // Prefer the profile name Supabase gives us (Google/OAuth fills it in), and
+  // fall back to the email the way a real account menu would.
+  const displayName = user ? user.full_name || user.email : isGuest ? 'Guest' : 'User';
+  const initials =
+    (user ? user.full_name || user.email : isGuest ? 'G' : 'U')
+      .split(/[\s@._-]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '')
+      .join('') || 'U';
 
   const handleAnalyze = () => {
     if (onAnalyze && url) {
@@ -45,11 +58,19 @@ export function YouTubeInput({ onLogout, onAnalyze }: YouTubeInputProps) {
       </div>
 
       <div className="flex items-center gap-3 self-end md:self-auto">
-        <div className="w-8 h-8 rounded-full bg-[#2a2d40] flex items-center justify-center text-xs text-gray-300 border border-[#3b405a]">
-          NR
+        <div className="w-8 h-8 rounded-full bg-[#2a2d40] flex items-center justify-center text-xs text-gray-300 border border-[#3b405a] overflow-hidden">
+          {user?.avatar_url ? (
+            <img
+              src={user.avatar_url}
+              alt={displayName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            initials
+          )}
         </div>
-        <div className="flex items-center gap-1 text-sm text-gray-300 cursor-pointer hover:text-white">
-          Nadia Rachal
+        <div className="flex items-center gap-1 text-sm text-gray-300 max-w-[160px] truncate" title={displayName}>
+          {displayName}
         </div>
         <button 
           onClick={onLogout}

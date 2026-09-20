@@ -27,4 +27,8 @@ dist-ssr
 venv
 __pycache__
 
-test_backend.py
+# Local development database (never commit user data). With SUPABASE_DB_URL set,
+# the backend uses Supabase Postgres instead and these files are not created.
+backend/app.db
+backend/app.db-wal
+backend/app.db-shm
