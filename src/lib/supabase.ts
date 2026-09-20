@@ -18,8 +18,15 @@ export function requireSupabase() {
   return supabase;
 }
 
-/** Base URL used by Supabase Auth for OAuth and magic link redirects */
-export const authRedirectTo = typeof window !== 'undefined' ? window.location.origin : '';
+/**
+ * Returns the redirect URL for Supabase Auth OAuth and Magic Link callbacks.
+ * Accepts an optional path (e.g. authRedirectTo('/auth/callback')).
+ */
+export function authRedirectTo(path: string = ''): string {
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  if (!path) return origin;
+  return `${origin}${path.startsWith('/') ? path : `/${path}`}`;
+}
 
 export interface AuthSettings {
   isConfigured: boolean;
