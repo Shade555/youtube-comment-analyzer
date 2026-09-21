@@ -32,6 +32,7 @@ export interface AuthSettings {
   isConfigured: boolean;
   providers?: string[];
   allowSignUp?: boolean;
+  mailerAutoconfirm: boolean;
 }
 
 /**
@@ -42,5 +43,6 @@ export async function fetchAuthSettings(): Promise<AuthSettings> {
     isConfigured: isSupabaseConfigured,
     providers: ['email', 'google', 'github'],
     allowSignUp: true,
+    mailerAutoconfirm: true,
   };
 }
