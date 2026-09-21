@@ -19,6 +19,11 @@ import { hasUsableProvider, providerLabels } from '../lib/authProviders';
 import { PasswordChecklist } from './auth/PasswordChecklist';
 import { SubmitButton } from './auth/SubmitButton';
 
+interface SupabaseAuthSettings {
+  providers: Provider[];
+  mailerAutoconfirm: boolean;
+}
+
 type Mode = 'login' | 'signup' | 'reset' | 'check-email' | 'new-password';
 
 interface AuthCardProps {
