@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Provider } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -30,7 +31,7 @@ export function authRedirectTo(path: string = ''): string {
 
 export interface AuthSettings {
   isConfigured: boolean;
-  providers?: string[];
+  providers: Provider[];
   allowSignUp?: boolean;
   mailerAutoconfirm: boolean;
 }
@@ -41,7 +42,7 @@ export interface AuthSettings {
 export async function fetchAuthSettings(): Promise<AuthSettings> {
   return {
     isConfigured: isSupabaseConfigured,
-    providers: ['email', 'google', 'github'],
+    providers: ['email', 'google', 'github'] as Provider[],
     allowSignUp: true,
     mailerAutoconfirm: true,
   };
