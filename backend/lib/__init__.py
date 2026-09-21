@@ -1,0 +1,1 @@
+"""Small, framework-free helpers shared by the API layer."""

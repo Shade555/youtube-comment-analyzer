@@ -2,6 +2,7 @@ import { useState } from "react";
 // @ts-ignore
 import MoltenMetal from "../components/MoltenMetal";
 import { AuthCard } from "../components/AuthCard";
+import { useAuth } from "../context/AuthContext";
 
 interface LandingProps {
   onEnterApp: () => void;
@@ -9,6 +10,7 @@ interface LandingProps {
 
 export function Landing({ onEnterApp }: LandingProps) {
   const [showAuth, setShowAuth] = useState(false);
+  const { continueAsGuest } = useAuth();
 
   return (
     <div className="relative w-full h-screen bg-[#0f1016] overflow-hidden">
@@ -44,7 +46,10 @@ export function Landing({ onEnterApp }: LandingProps) {
         
         <div className="flex flex-col sm:flex-row gap-4">
           <button 
-            onClick={() => onEnterApp()}
+            onClick={() => {
+              continueAsGuest();
+              onEnterApp();
+            }}
             className="px-8 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-gray-100 transition-colors shadow-lg"
           >
             Guest Mode

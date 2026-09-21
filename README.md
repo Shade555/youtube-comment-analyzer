@@ -82,11 +82,77 @@ The models were trained offline in Google Colab and exported as reusable artifac
 3. A YouTube Data API v3 Key (from Google Cloud Console)
 
 ### 1. Configure Environment Variables
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory (see `.env.example` for the annotated version):
 ```env
 YOUTUBE_API_KEY=your_actual_api_key_here
 MAX_COMMENTS=100
+
+# Supabase Auth — the browser signs users in against Supabase directly
+VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+VITE_SUPABASE_ANON_KEY=<publishable/anon key>
+SUPABASE_URL=https://<project-ref>.supabase.co
+SUPABASE_ANON_KEY=<publishable/anon key>
+
+# Optional: move app data (analyses) from SQLite to Supabase Postgres.
+# Leave it out and the backend keeps using backend/app.db.
+SUPABASE_DB_URL=postgresql://postgres.<project-ref>:<db-password>@aws-0-<region>.pooler.supabase.com:6543/postgres
 ```
+
+Notes:
+- **Auth is on Supabase.** Identity (signup, login, OAuth, password reset) is owned by
+  Supabase Auth; the backend verifies the resulting access token (ES256 via the
+  project JWKS, or HS256 for legacy projects) and mirrors the profile into the
+  `profiles` table.
+- **Two tables, both written straight from the browser.** `public.profiles` holds the
+  mirrored account (id + email + display name + avatar) and `public.analyses` holds one
+  row per finished analysis (video metadata, comment counts, emotion distribution,
+  model usage, the full comment list, sarcasm rate and status). The app talks to them
+  over PostgREST with the publishable key, so Row Level Security is what keeps each
+  user's rows private - `backend/sql/supabase_schema.sql` creates the tables, the
+  indexes and those policies. Paste it into the Supabase SQL editor once (it is
+  idempotent) and the History page works with no backend running at all.
+- **Whoever runs on Postgres owns the write.** An authenticated
+  `POST /api/analyze/youtube` is also persisted by the backend. When the backend
+  reports `database: "postgres"` on `GET /` the browser skips its own insert, so a run
+  is never stored twice; if the backend is on SQLite (or absent), the browser stores
+  the run in Supabase itself.
+- **Data follows `SUPABASE_DB_URL`.** If it is missing or still the `.env.example`
+  placeholder, the backend runs on SQLite (`backend/app.db`) and says so on
+  `GET /`. To move existing rows to Supabase, run
+  `python -m backend.scripts.migrate_sqlite_to_supabase --email <you@example.com>`
+  after signing up in the app once with that same email.
+- **Duplicate account emails.** `profiles.email` is unique, and an account carried
+  over from the old SQLite schema can already own your address. Symptom: sign-in works
+  but saving an analysis reports a duplicate key. If that old row still holds analyses
+  you want, run
+  `python -m backend.scripts.migrate_sqlite_to_supabase --email <you@example.com>`
+  first (it refuses unless a Supabase profile for the email exists), then remove the
+  stale row - it is the one whose `id` differs from your Supabase user id:
+  `delete from public.profiles where email = '<you@example.com>' and id <> '<supabase user id>';`
+  The app mirrors the profile again on the next session.
+- Google sign-in only appears once the provider is enabled in
+  **Authentication → Providers**; the sign-in card reads the project's
+  `/auth/v1/settings` and shows a button for every provider that is switched on
+  (Google, GitHub, Microsoft, Apple).
+
+### Auth settings that trip people up
+
+Supabase's built-in mailer is **best-effort and capped at ~2 emails/hour**, so
+signup confirmation links often never arrive. For a working demo:
+
+1. **Turn email confirmation off** — Supabase → Authentication → Sign In /
+   Providers → Email → disable *Confirm email*. Signup then returns a session
+   immediately. (The card detects the opposite setting and explains the block
+   instead of leaving you stuck on "check your inbox".)
+2. **Or/and enable Google** — the card then offers it automatically:
+   - Google Cloud → **APIs & Services → Credentials → Create credentials →
+     OAuth client ID → Web application**.
+   - Authorized redirect URI (exactly):
+     `https://<project-ref>.supabase.co/auth/v1/callback`
+   - Paste the Client ID + Client Secret into Supabase →
+     Authentication → Providers → **Google** → Enable.
+   - Supabase → Authentication → **URL Configuration**: Site URL
+     `http://localhost:5173`, and add `http://localhost:5173/**` to Redirect URLs.
 
 ### 2. Setup the Backend (FastAPI)
 Open a terminal in the root directory:

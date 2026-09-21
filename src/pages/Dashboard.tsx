@@ -7,16 +7,23 @@ import { WordCloud } from "../components/WordCloud";
 import { CommentsSection } from "../components/CommentsSection";
 import { api } from "../services/api";
 import type { YouTubeAnalyzeResponse } from "../services/api";
+import { historyStore } from "../services/historyStore";
+import { useAuth } from "../context/AuthContext";
 
 interface DashboardProps {
   onLogout: () => void;
 }
 
 export function Dashboard({ onLogout }: DashboardProps) {
+  const { user } = useAuth();
   // State for the API response
   const [analysisData, setAnalysisData] = useState<YouTubeAnalyzeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Feedback about storing the finished analysis (Supabase or the backend).
+  const [saveNotice, setSaveNotice] = useState<{ tone: "ok" | "error"; text: string } | null>(
+    null
+  );
 
   // Group emotions for the KPI section
   const getKPIStats = () => {
@@ -48,9 +55,30 @@ export function Dashboard({ onLogout }: DashboardProps) {
   const handleAnalyze = async (url: string) => {
     setIsLoading(true);
     setError(null);
+    setSaveNotice(null);
     try {
       const data = await api.analyzeYouTubeVideo(url);
       setAnalysisData(data);
+
+      // Store the run for the signed-in user. When the backend already persists
+      // into Postgres it owns the write (saving again here would duplicate the
+      // row), otherwise the browser writes to public.analyses via Supabase.
+      if (user) {
+        try {
+          const saved = await historyStore.save(user.id, data);
+          if (saved) {
+            setSaveNotice({ tone: "ok", text: "Saved to your analysis history." });
+          }
+        } catch (saveErr) {
+          setSaveNotice({
+            tone: "error",
+            text:
+              saveErr instanceof Error
+                ? saveErr.message
+                : "Could not save this analysis to Supabase.",
+          });
+        }
+      }
     } catch (err: any) {
       setError(err.message || "Failed to analyze video. Make sure the backend is running.");
       console.error(err);
@@ -71,6 +99,18 @@ export function Dashboard({ onLogout }: DashboardProps) {
       {error && (
         <div className="bg-red-500/10 border border-red-500/50 text-red-500 px-4 py-3 rounded-lg mb-6">
           {error}
+        </div>
+      )}
+
+      {saveNotice && (
+        <div
+          className={
+            saveNotice.tone === "ok"
+              ? "bg-emerald-500/10 border border-emerald-500/40 text-emerald-300 px-4 py-3 rounded-lg mb-6 text-sm"
+              : "bg-amber-500/10 border border-amber-500/40 text-amber-200 px-4 py-3 rounded-lg mb-6 text-sm"
+          }
+        >
+          {saveNotice.text}
         </div>
       )}
 

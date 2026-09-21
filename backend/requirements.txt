@@ -10,3 +10,8 @@ google-api-python-client==2.108.0
 python-dotenv==1.0.0
 requests==2.31.0
 SQLAlchemy==2.0.23
+PyJWT==2.8.0
+# Postgres driver for Supabase (SQLAlchemy uses postgresql+psycopg://)
+psycopg[binary]==3.3.5
+# Required by PyJWT to verify ES256/RS256 tokens against Supabase's JWKS
+cryptography==50.0.1
