@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { describeAuthError, validateEmail, validatePassword } from '../lib/authErrors';
-import { fetchAuthSettings, type SupabaseAuthSettings } from '../lib/supabase';
+import { fetchAuthSettings } from '../lib/supabase';
 import { TextField } from './auth/TextField';
 import { ProviderButtons } from './auth/ProviderButtons';
 import { hasUsableProvider, providerLabels } from '../lib/authProviders';
