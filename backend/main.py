@@ -1,8 +1,11 @@
+import os
 from datetime import datetime
 from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from . import models, schemas
@@ -36,18 +39,26 @@ app.add_middleware(
 def _iso(dt: Optional[datetime]) -> Optional[str]:
     return dt.isoformat() if dt else None
 
-@app.get("/")
+# ---------------------------------------------------------------------------
+# Static file serving – serve the React dist/ build from the same process.
+# The dist/ folder is at the project root, one level above backend/.
+# ---------------------------------------------------------------------------
+DIST_DIR = os.path.join(os.path.dirname(__file__), "..", "dist")
+
+if os.path.isdir(DIST_DIR):
+    # Serve JS/CSS/assets from /assets and other static files
+    app.mount("/assets", StaticFiles(directory=os.path.join(DIST_DIR, "assets")), name="assets")
+
+
+@app.get("/api/health")
 def health_check():
     payload = {
         "status": "ok",
         "message": "API is running.",
-        # Lets the frontend/demo show which auth + database backend is live.
         "auth_mode": settings.AUTH_MODE,
         "database": "sqlite" if settings.using_sqlite else "postgres",
     }
     if settings.IGNORED_PLACEHOLDERS:
-        # A half-filled .env is a common setup mistake. Say so loudly instead of
-        # silently running on the SQLite fallback.
         payload["ignored_placeholders"] = list(settings.IGNORED_PLACEHOLDERS)
         payload["hint"] = (
             "These variables still hold .env.example placeholders and were "
@@ -299,3 +310,17 @@ def delete_analysis(
     db.delete(row)
     db.commit()
     return {"status": "ok", "message": "Analysis deleted."}
+
+
+# ---------------------------------------------------------------------------
+# Catch-all: serve React's index.html for every non-API route so that
+# React Router (client-side routing) works when the user refreshes or
+# navigates directly to /dashboard, /history, etc.
+# This MUST be the last route registered.
+# ---------------------------------------------------------------------------
+@app.get("/{full_path:path}")
+def serve_react(full_path: str):
+    index = os.path.join(DIST_DIR, "index.html")
+    if os.path.isfile(index):
+        return FileResponse(index)
+    return {"status": "ok", "message": "API is running. No React build found."}
