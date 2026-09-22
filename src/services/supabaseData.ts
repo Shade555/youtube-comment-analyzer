@@ -22,12 +22,11 @@ export function isSupabaseDataEnabled(): boolean {
 export async function upsertProfile(profile: UserProfile): Promise<void> {
   const supabase = requireSupabase();
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     id: profile.id,
     ...(profile.email ? { email: profile.email } : {}),
     ...(profile.full_name !== undefined ? { full_name: profile.full_name } : {}),
     ...(profile.avatar_url !== undefined ? { avatar_url: profile.avatar_url } : {}),
-    updated_at: new Date().toISOString(),
   };
 
   const { error } = await supabase
