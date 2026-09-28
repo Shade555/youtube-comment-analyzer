@@ -24,13 +24,12 @@ export function CommentsTable({ comments = [] }: CommentsTableProps) {
               <th className="py-3 px-4 font-medium">Comment</th>
               <th className="py-3 px-4 font-medium w-48">Emotions</th>
               <th className="py-3 px-4 font-medium w-32">Model</th>
-              <th className="py-3 px-4 font-medium text-center w-28">Sarcastic</th>
             </tr>
           </thead>
           <tbody>
             {comments.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-12 text-center text-gray-500 text-sm">
+                <td colSpan={4} className="py-12 text-center text-gray-500 text-sm">
                   No comments to display
                 </td>
               </tr>
@@ -57,15 +56,6 @@ export function CommentsTable({ comments = [] }: CommentsTableProps) {
                     <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${c.emotion_model === 'Pure Hindi' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'} border`}>
                       {c.emotion_model}
                     </span>
-                  </td>
-                  <td className="py-3 px-4 align-top text-center">
-                    {c.sarcasm_label === 1 ? (
-                      <div className="flex items-center justify-center gap-1 text-orange-400 bg-orange-400/10 border border-orange-400/20 px-2 py-0.5 rounded text-[10px] font-medium">
-                        <AlertTriangle size={12} /> Yes
-                      </div>
-                    ) : (
-                      <span className="text-gray-600 text-xs">No</span>
-                    )}
                   </td>
                 </tr>
               ))

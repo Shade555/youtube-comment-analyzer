@@ -83,7 +83,7 @@ export function History({ onLogout }: HistoryProps) {
       negative: neg,
       neutral: neu,
       misc,
-      sarcasm: Math.round((data.sarcasm_rate / 100) * data.analyzed_comments) || 0,
+
     };
   };
 
@@ -120,7 +120,7 @@ export function History({ onLogout }: HistoryProps) {
               neutral={kpi.neutral}
               negative={kpi.negative}
               misc={kpi.misc}
-              sarcasm={kpi.sarcasm}
+
             />
           </div>
         </div>
@@ -208,7 +208,7 @@ export function History({ onLogout }: HistoryProps) {
                       {new Date(item.created_at).toLocaleString()}
                     </span>
                     <span>{item.analyzed_comments.toLocaleString()} comments analyzed</span>
-                    <span>{item.sarcasm_rate}% sarcasm</span>
+                    
                   </div>
                 </div>
                 <div className="flex items-center gap-3 mt-3">

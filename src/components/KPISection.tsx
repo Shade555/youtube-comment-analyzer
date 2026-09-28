@@ -1,4 +1,4 @@
-import { MessageSquare, Smile, Meh, Frown, HelpCircle, AlertTriangle } from "lucide-react";
+import { MessageSquare, Smile, Meh, Frown, HelpCircle } from "lucide-react";
 
 interface KPISectionProps {
   totalComments?: number;
@@ -7,7 +7,6 @@ interface KPISectionProps {
   neutral?: number;
   negative?: number;
   misc?: number;
-  sarcasm?: number;
 }
 
 export function KPISection({
@@ -16,8 +15,7 @@ export function KPISection({
   positive = 0,
   neutral = 0,
   negative = 0,
-  misc = 0,
-  sarcasm = 0
+  misc = 0
 }: KPISectionProps) {
   
   const calcPercent = (val: number) => {
@@ -38,16 +36,6 @@ export function KPISection({
             <div className="text-white text-xl font-semibold">{totalComments}</div>
             <div className="text-gray-500 text-[10px]">Analyzed: {analyzedCount}</div>
           </div>
-        </div>
-        
-        {/* Sarcasm Highlight next to Total Comments */}
-        <div className="flex flex-col items-end">
-          <div className="flex items-center gap-1">
-            <AlertTriangle size={14} className="text-orange-500" />
-            <span className="text-gray-400 text-xs">Sarcasm Rate</span>
-          </div>
-          <div className="text-white text-lg font-semibold">{calcPercent(sarcasm)}</div>
-          <div className="text-gray-500 text-[10px]">({sarcasm} comments)</div>
         </div>
       </div>
 

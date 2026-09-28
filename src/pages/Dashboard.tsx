@@ -27,7 +27,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
 
   // Group emotions for the KPI section
   const getKPIStats = () => {
-    if (!analysisData) return { positive: 0, negative: 0, neutral: 0, misc: 0, sarcasm: 0 };
+    if (!analysisData) return { positive: 0, negative: 0, neutral: 0, misc: 0 };
     
     const posEmotions = ["Admiration", "Amusement", "Approval", "Caring", "Desire", "Excitement", "Gratitude", "Joy", "Love", "Optimism", "Pride", "Relief"];
     const negEmotions = ["Anger", "Annoyance", "Disappointment", "Disapproval", "Disgust", "Embarrassment", "Fear", "Grief", "Nervousness", "Remorse", "Sadness"];
@@ -48,7 +48,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
       negative: neg,
       neutral: neu,
       misc,
-      sarcasm: Math.round((analysisData.sarcasm_rate / 100) * analysisData.analyzed_comments) || 0
+
     };
   };
 
@@ -148,7 +148,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
                 neutral={kpi.neutral}
                 negative={kpi.negative}
                 misc={kpi.misc}
-                sarcasm={kpi.sarcasm}
+
               />
             </div>
           </div>
