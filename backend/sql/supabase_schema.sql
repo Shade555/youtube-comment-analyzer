@@ -32,6 +32,8 @@ create table if not exists public.analyses (
     video_url            varchar,
     video_title          varchar,
     thumbnail_url        varchar,
+    view_count           integer,
+    like_count           integer,
     total_comments       integer,
     analyzed_comments    integer,
     emotion_distribution json,

@@ -195,6 +195,8 @@ def analyze_youtube_video(
             video_url=request.url,
             video_title=youtube_data.get("title"),
             thumbnail_url=youtube_data.get("thumbnail"),
+            view_count=youtube_data.get("view_count"),
+            like_count=youtube_data.get("like_count"),
         )
 
         # Persist only successful analyses, and only for authenticated users.
@@ -205,6 +207,8 @@ def analyze_youtube_video(
                 video_url=request.url,
                 video_title=youtube_data.get("title"),
                 thumbnail_url=youtube_data.get("thumbnail"),
+                view_count=youtube_data.get("view_count"),
+                like_count=youtube_data.get("like_count"),
                 total_comments=response.total_comments,
                 analyzed_comments=response.analyzed_comments,
                 emotion_distribution=response.emotion_distribution,
@@ -248,6 +252,8 @@ def list_analyses(
             video_url=r.video_url,
             video_title=r.video_title,
             thumbnail_url=r.thumbnail_url,
+            view_count=r.view_count,
+            like_count=r.like_count,
             total_comments=r.total_comments,
             analyzed_comments=r.analyzed_comments,
             sarcasm_rate=r.sarcasm_rate,
@@ -280,6 +286,8 @@ def get_analysis(
         video_url=row.video_url,
         video_title=row.video_title,
         thumbnail_url=row.thumbnail_url,
+        view_count=row.view_count,
+        like_count=row.like_count,
         total_comments=row.total_comments,
         analyzed_comments=row.analyzed_comments,
         emotion_distribution=row.emotion_distribution or {},

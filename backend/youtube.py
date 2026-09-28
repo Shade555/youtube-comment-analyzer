@@ -32,7 +32,7 @@ def fetch_youtube_comments(video_id: str, max_comments: int = None):
     try:
         # First, fetch video details to make sure it exists and get title
         video_request = youtube.videos().list(
-            part="snippet",
+            part="snippet,statistics",
             id=video_id
         )
         video_response = video_request.execute()
@@ -42,6 +42,10 @@ def fetch_youtube_comments(video_id: str, max_comments: int = None):
             
         video_title = video_response["items"][0]["snippet"]["title"]
         video_thumbnail = video_response["items"][0]["snippet"]["thumbnails"].get("medium", {}).get("url", "")
+        
+        statistics = video_response["items"][0].get("statistics", {})
+        view_count = int(statistics.get("viewCount", 0))
+        like_count = int(statistics.get("likeCount", 0))
         
         # Then, fetch comments
         while len(comments) < max_comments:
@@ -71,6 +75,8 @@ def fetch_youtube_comments(video_id: str, max_comments: int = None):
             "video_id": video_id,
             "title": video_title,
             "thumbnail": video_thumbnail,
+            "view_count": view_count,
+            "like_count": like_count,
             "comments": comments
         }
         
