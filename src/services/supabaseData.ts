@@ -47,7 +47,7 @@ export async function listAnalyses(): Promise<AnalysisSummary[]> {
 
   const { data, error } = await supabase
     .from('analyses')
-    .select('id, video_id, video_url, video_title, thumbnail_url, view_count, like_count, total_comments, analyzed_comments, sarcasm_rate, status, created_at')
+    .select('id, video_id, video_url, video_title, thumbnail_url, total_comments, analyzed_comments, sarcasm_rate, status, created_at')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -114,8 +114,6 @@ export async function saveAnalysis(
     video_url: data.video_url || `https://www.youtube.com/watch?v=${videoId}`,
     video_title: data.video_title || `Video (${videoId})`,
     thumbnail_url: thumbnailUrl,
-    view_count: data.view_count,
-    like_count: data.like_count,
     total_comments: data.total_comments,
     analyzed_comments: data.analyzed_comments,
     emotion_distribution: data.emotion_distribution,
@@ -127,7 +125,7 @@ export async function saveAnalysis(
   const { data: inserted, error } = await supabase
     .from('analyses')
     .insert([recordToInsert])
-    .select('id, video_id, video_url, video_title, thumbnail_url, view_count, like_count, total_comments, analyzed_comments, sarcasm_rate, status, created_at')
+    .select('id, video_id, video_url, video_title, thumbnail_url, total_comments, analyzed_comments, sarcasm_rate, status, created_at')
     .single();
 
   if (error) {

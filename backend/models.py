@@ -53,8 +53,6 @@ class Analysis(Base):
     video_url = Column(String, nullable=True)
     video_title = Column(String, nullable=True)
     thumbnail_url = Column(String, nullable=True)
-    view_count = Column(Integer, nullable=True)
-    like_count = Column(Integer, nullable=True)
 
     total_comments = Column(Integer, default=0)
     analyzed_comments = Column(Integer, default=0)

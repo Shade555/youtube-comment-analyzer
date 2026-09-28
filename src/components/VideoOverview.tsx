@@ -1,15 +1,15 @@
 import { Eye, ThumbsUp, MessageSquare, CheckCircle2 } from "lucide-react";
 
 interface VideoOverviewProps {
-  videoId?: string;
-  videoTitle?: string;
-  viewCount?: number;
-  likeCount?: number;
-  totalComments?: number;
+  videoId?: string | null;
+  videoTitle?: string | null;
+  viewCount?: number | null;
+  likeCount?: number | null;
+  totalComments?: number | null;
 }
 
 export function VideoOverview({ videoId, videoTitle, viewCount, likeCount, totalComments }: VideoOverviewProps) {
-  const formatNumber = (num?: number) => {
+  const formatNumber = (num?: number | null) => {
     if (num === undefined || num === null) return "--";
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
     if (num >= 1000) return (num / 1000).toFixed(1) + "K";

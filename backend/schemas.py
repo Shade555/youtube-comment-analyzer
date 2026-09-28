@@ -82,8 +82,6 @@ class SaveAnalysisRequest(BaseModel):
     video_url: Optional[str] = None
     video_title: Optional[str] = None
     thumbnail_url: Optional[str] = None
-    view_count: Optional[int] = None
-    like_count: Optional[int] = None
     total_comments: int = 0
     analyzed_comments: int = 0
     emotion_distribution: Dict[str, int] = {}
@@ -99,8 +97,6 @@ class AnalysisResponse(BaseModel):
     video_url: Optional[str] = None
     video_title: Optional[str] = None
     thumbnail_url: Optional[str] = None
-    view_count: Optional[int] = None
-    like_count: Optional[int] = None
     total_comments: int
     analyzed_comments: int
     emotion_distribution: Dict[str, int]

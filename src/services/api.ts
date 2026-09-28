@@ -122,8 +122,6 @@ export interface AnalysisSummary {
   video_url?: string | null;
   video_title?: string | null;
   thumbnail_url?: string | null;
-  view_count?: number | null;
-  like_count?: number | null;
   total_comments: number;
   analyzed_comments: number;
   sarcasm_rate: number;

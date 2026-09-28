@@ -127,7 +127,13 @@ export function Dashboard({ onLogout }: DashboardProps) {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 mb-4">
             <div className="flex flex-col gap-4">
-              <VideoOverview videoId={analysisData?.video_id} />
+              <VideoOverview 
+                  videoId={analysisData?.video_id} 
+                  videoTitle={analysisData?.video_title}
+                  viewCount={analysisData?.view_count}
+                  likeCount={analysisData?.like_count}
+                  totalComments={analysisData?.total_comments}
+                />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:h-[250px]">
                 <SentimentDistribution 
