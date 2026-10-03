@@ -26,17 +26,8 @@ export function CommentsSection({ comments = [] }: CommentsSectionProps) {
     // Sentiment filter
     if (sentimentFilter !== "All") {
       result = result.filter(c => {
-        const primaryEmotion = (c.emotions?.[0] || "").toLowerCase();
-        if (sentimentFilter === "Positive") {
-          return ["admiration", "joy", "approval", "caring", "excitement", "amusement", "gratitude", "love", "optimism", "relief", "pride", "positive"].includes(primaryEmotion);
-        }
-        if (sentimentFilter === "Negative") {
-          return ["sadness", "anger", "disappointment", "annoyance", "disapproval", "disgust", "fear", "nervousness", "remorse", "grief", "negative"].includes(primaryEmotion);
-        }
-        if (sentimentFilter === "Neutral") {
-          return primaryEmotion === "neutral";
-        }
-        return true;
+        const primaryEmotion = (c.emotions?.[0] || "neutral").toLowerCase();
+        return primaryEmotion === sentimentFilter.toLowerCase();
       });
     }
 

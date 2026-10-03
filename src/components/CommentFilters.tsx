@@ -80,10 +80,10 @@ export function CommentFilters({
           </button>
           {showSentimentDropdown && (
             <div className="absolute top-full left-0 mt-1 w-40 bg-[#1f2130] border border-[#262837] rounded-lg shadow-xl z-20 overflow-hidden">
-              {['All', 'Positive', 'Negative', 'Neutral'].map(opt => (
+              {['All', ...Array.from(new Set(comments.map(c => { const e = c.emotions?.[0] || 'Neutral'; return e.charAt(0).toUpperCase() + e.slice(1); }))).sort()].map(opt => (
                 <div 
                   key={opt}
-                  onClick={() => setSentimentFilter(opt)}
+                  onMouseDown={() => setSentimentFilter(opt)}
                   className="px-4 py-2 text-sm text-gray-300 hover:bg-[#2a2d40] hover:text-white cursor-pointer"
                 >
                   {opt}
@@ -107,7 +107,7 @@ export function CommentFilters({
               {['Most Liked', 'Newest', 'Oldest'].map(opt => (
                 <div 
                   key={opt}
-                  onClick={() => setSortOrder(opt)}
+                  onMouseDown={() => setSortOrder(opt)}
                   className="px-4 py-2 text-sm text-gray-300 hover:bg-[#2a2d40] hover:text-white cursor-pointer"
                 >
                   {opt}
