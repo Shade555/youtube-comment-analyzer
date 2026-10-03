@@ -1,6 +1,38 @@
 import { Search, Download, ChevronDown, ArrowDownUp } from "lucide-react";
 
-export function CommentFilters() {
+
+interface CommentFiltersProps {
+  comments?: any[];
+}
+
+export function CommentFilters({ comments = [] }: CommentFiltersProps) {
+  const handleDownloadCSV = () => {
+    if (!comments || comments.length === 0) return;
+    
+    const headers = ["Text", "Processed Text", "Emotion Model", "Primary Emotion"];
+    const csvRows = [headers.join(",")];
+    
+    comments.forEach(c => {
+      const text = `"${(c.text || "").replace(/"/g, '""')}"`;
+      const processed = `"${(c.processed_text || "").replace(/"/g, '""')}"`;
+      const model = `"${c.emotion_model || ""}"`;
+      const emotion = `"${c.emotions && c.emotions.length > 0 ? c.emotions[0] : ""}"`;
+      
+      csvRows.push([text, processed, model, emotion].join(","));
+    });
+    
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "youtube_comments_analysis.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 w-full">
       <div className="flex flex-wrap items-center gap-3 w-full xl:flex-1">
@@ -32,7 +64,7 @@ export function CommentFilters() {
         </button>
       </div>
 
-      <button className="flex justify-center items-center gap-2 bg-[#2a2d40] hover:bg-[#343851] border border-[#3b405a] text-white px-4 py-2 rounded-lg text-sm transition-colors w-full xl:w-auto mt-2 xl:mt-0">
+      <button onClick={handleDownloadCSV} disabled={!comments || comments.length === 0} className="flex justify-center items-center gap-2 bg-[#2a2d40] hover:bg-[#343851] border border-[#3b405a] text-white px-4 py-2 rounded-lg text-sm transition-colors w-full xl:w-auto mt-2 xl:mt-0 disabled:opacity-50 disabled:cursor-not-allowed">
         <Download size={16} />
         Download CSV
       </button>

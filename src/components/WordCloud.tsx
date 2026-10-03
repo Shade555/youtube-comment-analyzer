@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, MouseEvent } from 'react';
 
 interface WordCloudProps {
   emotionDistribution?: Record<string, number>;
@@ -9,7 +9,13 @@ export function WordCloud({ emotionDistribution = {}, comments = [] }: WordCloud
   const [mode, setMode] = useState<'emotions' | 'words'>('emotions');
   const hasEmotions = Object.keys(emotionDistribution).length > 0;
   
-  // Hash function for stable emotion colors
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [scrollTop, setScrollTop] = useState(0);
+
   const getEmotionColor = (emotion: string) => {
     let hash = 0;
     for (let i = 0; i < emotion.length; i++) {
@@ -17,6 +23,34 @@ export function WordCloud({ emotionDistribution = {}, comments = [] }: WordCloud
     }
     const hue = Math.abs(hash) % 360;
     return `hsl(${hue}, 70%, 65%)`;
+  };
+
+  const onMouseDown = (e: MouseEvent) => {
+    if (!containerRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - containerRef.current.offsetLeft);
+    setStartY(e.pageY - containerRef.current.offsetTop);
+    setScrollLeft(containerRef.current.scrollLeft);
+    setScrollTop(containerRef.current.scrollTop);
+  };
+
+  const onMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const onMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const onMouseMove = (e: MouseEvent) => {
+    if (!isDragging || !containerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - containerRef.current.offsetLeft;
+    const y = e.pageY - containerRef.current.offsetTop;
+    const walkX = (x - startX) * 1.5; 
+    const walkY = (y - startY) * 1.5;
+    containerRef.current.scrollLeft = scrollLeft - walkX;
+    containerRef.current.scrollTop = scrollTop - walkY;
   };
 
   const renderEmotions = () => {
@@ -28,7 +62,7 @@ export function WordCloud({ emotionDistribution = {}, comments = [] }: WordCloud
       return (
         <span
           key={idx}
-          className="capitalize font-semibold m-1 cursor-grab active:cursor-grabbing inline-block transition-transform hover:scale-110"
+          className="capitalize font-semibold m-2 inline-block select-none transition-transform hover:scale-110"
           style={{ 
             fontSize: `${size}px`, 
             opacity,
@@ -53,7 +87,7 @@ export function WordCloud({ emotionDistribution = {}, comments = [] }: WordCloud
       const primaryEmotion = c.emotions?.[0] || 'neutral';
       
       words.forEach((w: string) => {
-        if (w.length < 3) return; // skip very short words
+        if (w.length < 3) return; 
         if (!wordCounts[w]) {
           wordCounts[w] = { count: 0, emotion: primaryEmotion };
         }
@@ -63,7 +97,7 @@ export function WordCloud({ emotionDistribution = {}, comments = [] }: WordCloud
     
     const sortedWords = Object.entries(wordCounts)
       .sort((a, b) => b[1].count - a[1].count)
-      .slice(0, 50); // Top 50 words
+      .slice(0, 50);
       
     if (sortedWords.length === 0) return <span className="text-gray-500 text-sm">No words to display</span>;
 
@@ -76,7 +110,7 @@ export function WordCloud({ emotionDistribution = {}, comments = [] }: WordCloud
       return (
         <span
           key={idx}
-          className="font-medium m-1 cursor-grab active:cursor-grabbing inline-block transition-transform hover:scale-110"
+          className="font-medium m-2 inline-block select-none transition-transform hover:scale-110"
           style={{ 
             fontSize: `${size}px`, 
             opacity,
@@ -91,8 +125,8 @@ export function WordCloud({ emotionDistribution = {}, comments = [] }: WordCloud
   };
 
   return (
-    <div className="bg-[#14151f]/80 backdrop-blur-xl rounded-xl border border-[#262837]/60 p-5 w-full h-full flex flex-col shadow-lg">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-[#14151f]/80 backdrop-blur-xl rounded-xl border border-[#262837]/60 p-5 w-full h-full max-h-full flex flex-col shadow-lg overflow-hidden relative">
+      <div className="flex justify-between items-center mb-4 shrink-0 z-10">
         <h3 className="text-white font-medium">Cloud View</h3>
         <div className="flex bg-[#1f2130] rounded-lg p-1 border border-[#262837]/60">
           <button 
@@ -109,8 +143,20 @@ export function WordCloud({ emotionDistribution = {}, comments = [] }: WordCloud
           </button>
         </div>
       </div>
-      <div className="flex-1 flex flex-wrap items-center justify-center content-center gap-x-2 gap-y-1 overflow-y-auto custom-scrollbar p-2 max-h-[220px]">
-        {mode === 'emotions' ? (hasEmotions ? renderEmotions() : <span className="text-gray-500 text-sm">No emotions to display</span>) : renderWords()}
+      
+      {/* Draggable Container */}
+      <div 
+        ref={containerRef}
+        className={`flex-1 overflow-hidden rounded-lg ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        onMouseDown={onMouseDown}
+        onMouseLeave={onMouseLeave}
+        onMouseUp={onMouseUp}
+        onMouseMove={onMouseMove}
+      >
+        {/* Inner surface that is larger than the container to allow 2D panning */}
+        <div className="w-[600px] min-h-[300px] flex flex-wrap items-center justify-center content-center p-4">
+          {mode === 'emotions' ? (hasEmotions ? renderEmotions() : <span className="text-gray-500 text-sm">No emotions to display</span>) : renderWords()}
+        </div>
       </div>
     </div>
   );
