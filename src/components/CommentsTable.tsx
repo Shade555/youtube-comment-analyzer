@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CommentsTableProps {
   comments?: any[];
@@ -8,6 +8,12 @@ interface CommentsTableProps {
 export function CommentsTable({ comments = [] }: CommentsTableProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+
+  // Reset page when comments list changes (e.g., from filtering)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [comments]);
+
   
   const totalPages = Math.ceil(comments.length / itemsPerPage);
   const currentComments = comments.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
