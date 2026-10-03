@@ -86,6 +86,8 @@ export interface CommentAnalysis {
   emotions: string[];
   sarcasm_label: number;
   sarcasm_probability: number;
+  likeCount?: number;
+  publishedAt?: string;
 }
 
 export interface YouTubeAnalyzeResponse {

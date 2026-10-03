@@ -12,6 +12,8 @@ class CommentAnalysis(BaseModel):
     emotions: List[str]
     sarcasm_label: int
     sarcasm_probability: float
+    likeCount: int = 0
+    publishedAt: str = ""
 
 class YouTubeAnalyzeResponse(BaseModel):
     # "model_usage" trips pydantic's protected "model_" namespace; disable it.

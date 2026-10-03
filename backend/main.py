@@ -174,6 +174,8 @@ def analyze_youtube_video(
             result = unified_predict(c["text"])
             # Only include if preprocessing produced some text
             if result["processed_text"]:
+                result["likeCount"] = c.get("likeCount", 0)
+                result["publishedAt"] = c.get("publishedAt", "")
                 predictions.append(result)
 
         if not predictions:

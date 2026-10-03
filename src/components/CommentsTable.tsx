@@ -18,9 +18,6 @@ export function CommentsTable({ comments = [] }: CommentsTableProps) {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="text-gray-500 text-xs border-b border-[#262837]">
-              <th className="py-3 px-2 w-10 text-center font-medium">
-                <input type="checkbox" className="rounded border-gray-600 bg-[#1f2130]" />
-              </th>
               <th className="py-3 px-4 font-medium">Comment</th>
               <th className="py-3 px-4 font-medium w-48">Emotions</th>
               <th className="py-3 px-4 font-medium w-32">Model</th>
@@ -29,16 +26,13 @@ export function CommentsTable({ comments = [] }: CommentsTableProps) {
           <tbody>
             {comments.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-12 text-center text-gray-500 text-sm">
+                <td colSpan={3} className="py-12 text-center text-gray-500 text-sm">
                   No comments to display
                 </td>
               </tr>
             ) : (
               currentComments.map((c, idx) => (
                 <tr key={idx} className="border-b border-[#262837]/30 hover:bg-[#1f2130]/30 transition-colors">
-                  <td className="py-3 px-2 w-10 text-center align-top">
-                    <input type="checkbox" className="rounded border-gray-600 bg-[#1f2130]" />
-                  </td>
                   <td className="py-3 px-4 align-top">
                     <div className="text-gray-300 text-sm mb-1">{c.text}</div>
                     <div className="text-gray-500 text-xs italic">Processed: {c.processed_text || 'None'}</div>

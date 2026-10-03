@@ -1,15 +1,33 @@
 import { Search, Download, ChevronDown, ArrowDownUp } from "lucide-react";
-
+import { useState } from "react";
 
 interface CommentFiltersProps {
   comments?: any[];
+  searchQuery: string;
+  setSearchQuery: (val: string) => void;
+  sentimentFilter: string;
+  setSentimentFilter: (val: string) => void;
+  sortOrder: string;
+  setSortOrder: (val: string) => void;
 }
 
-export function CommentFilters({ comments = [] }: CommentFiltersProps) {
+export function CommentFilters({ 
+  comments = [], 
+  searchQuery, 
+  setSearchQuery, 
+  sentimentFilter, 
+  setSentimentFilter, 
+  sortOrder, 
+  setSortOrder 
+}: CommentFiltersProps) {
+  
+  const [showSentimentDropdown, setShowSentimentDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+
   const handleDownloadCSV = () => {
     if (!comments || comments.length === 0) return;
     
-    const headers = ["Text", "Processed Text", "Emotion Model", "Primary Emotion"];
+    const headers = ["Text", "Processed Text", "Emotion Model", "Primary Emotion", "Likes", "Published At"];
     const csvRows = [headers.join(",")];
     
     comments.forEach(c => {
@@ -17,8 +35,10 @@ export function CommentFilters({ comments = [] }: CommentFiltersProps) {
       const processed = `"${(c.processed_text || "").replace(/"/g, '""')}"`;
       const model = `"${c.emotion_model || ""}"`;
       const emotion = `"${c.emotions && c.emotions.length > 0 ? c.emotions[0] : ""}"`;
+      const likes = c.likeCount || 0;
+      const publishedAt = `"${c.publishedAt || ""}"`;
       
-      csvRows.push([text, processed, model, emotion].join(","));
+      csvRows.push([text, processed, model, emotion, likes, publishedAt].join(","));
     });
     
     const csvContent = csvRows.join("\n");
@@ -42,29 +62,67 @@ export function CommentFilters({ comments = [] }: CommentFiltersProps) {
           </div>
           <input
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="block w-full pl-9 pr-3 py-2 border border-[#262837] rounded-lg leading-5 bg-[#1f2130] text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             placeholder="Search comments..."
           />
         </div>
 
-        <button className="flex items-center gap-2 px-3 py-2 border border-[#262837] rounded-lg bg-[#1f2130] text-sm text-gray-300 hover:text-white transition-colors">
-          All Sentiments <ChevronDown size={14} className="text-gray-500" />
-        </button>
+        {/* Sentiment Filter */}
+        <div className="relative">
+          <button 
+            onClick={() => setShowSentimentDropdown(!showSentimentDropdown)}
+            onBlur={() => setTimeout(() => setShowSentimentDropdown(false), 200)}
+            className="flex items-center gap-2 px-3 py-2 border border-[#262837] rounded-lg bg-[#1f2130] text-sm text-gray-300 hover:text-white transition-colors"
+          >
+            {sentimentFilter === 'All' ? 'All Sentiments' : sentimentFilter} <ChevronDown size={14} className="text-gray-500" />
+          </button>
+          {showSentimentDropdown && (
+            <div className="absolute top-full left-0 mt-1 w-40 bg-[#1f2130] border border-[#262837] rounded-lg shadow-xl z-20 overflow-hidden">
+              {['All', 'Positive', 'Negative', 'Neutral'].map(opt => (
+                <div 
+                  key={opt}
+                  onClick={() => setSentimentFilter(opt)}
+                  className="px-4 py-2 text-sm text-gray-300 hover:bg-[#2a2d40] hover:text-white cursor-pointer"
+                >
+                  {opt}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <button className="flex items-center gap-2 px-3 py-2 border border-[#262837] rounded-lg bg-[#1f2130] text-sm text-gray-300 hover:text-white transition-colors">
-          All Confidence <ChevronDown size={14} className="text-gray-500" />
-        </button>
-
-        <button className="flex items-center gap-2 px-3 py-2 border border-[#262837] rounded-lg bg-[#1f2130] text-sm text-gray-300 hover:text-white transition-colors">
-          All Time <ChevronDown size={14} className="text-gray-500" />
-        </button>
-        
-        <button className="flex items-center gap-2 px-3 py-2 border border-[#262837] rounded-lg bg-[#1f2130] text-sm text-gray-300 hover:text-white transition-colors">
-          <ArrowDownUp size={14} className="text-gray-500" /> Most Liked <ChevronDown size={14} className="text-gray-500" />
-        </button>
+        {/* Sort Order */}
+        <div className="relative">
+          <button 
+            onClick={() => setShowSortDropdown(!showSortDropdown)}
+            onBlur={() => setTimeout(() => setShowSortDropdown(false), 200)}
+            className="flex items-center gap-2 px-3 py-2 border border-[#262837] rounded-lg bg-[#1f2130] text-sm text-gray-300 hover:text-white transition-colors"
+          >
+            <ArrowDownUp size={14} className="text-gray-500" /> {sortOrder} <ChevronDown size={14} className="text-gray-500" />
+          </button>
+          {showSortDropdown && (
+            <div className="absolute top-full left-0 mt-1 w-40 bg-[#1f2130] border border-[#262837] rounded-lg shadow-xl z-20 overflow-hidden">
+              {['Most Liked', 'Newest', 'Oldest'].map(opt => (
+                <div 
+                  key={opt}
+                  onClick={() => setSortOrder(opt)}
+                  className="px-4 py-2 text-sm text-gray-300 hover:bg-[#2a2d40] hover:text-white cursor-pointer"
+                >
+                  {opt}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      <button onClick={handleDownloadCSV} disabled={!comments || comments.length === 0} className="flex justify-center items-center gap-2 bg-[#2a2d40] hover:bg-[#343851] border border-[#3b405a] text-white px-4 py-2 rounded-lg text-sm transition-colors w-full xl:w-auto mt-2 xl:mt-0 disabled:opacity-50 disabled:cursor-not-allowed">
+      <button 
+        onClick={handleDownloadCSV} 
+        disabled={!comments || comments.length === 0} 
+        className="flex justify-center items-center gap-2 bg-[#2a2d40] hover:bg-[#343851] border border-[#3b405a] text-white px-4 py-2 rounded-lg text-sm transition-colors w-full xl:w-auto mt-2 xl:mt-0 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
         <Download size={16} />
         Download CSV
       </button>
