@@ -109,7 +109,7 @@ export function History({ onLogout }: HistoryProps) {
                 emotionDistribution={selected.emotion_distribution}
                 totalComments={selected.analyzed_comments}
               />
-              <WordCloud emotionDistribution={selected.emotion_distribution} />
+              <WordCloud emotionDistribution={selected.emotion_distribution} comments={selected.comments} />
             </div>
           </div>
           <div className="h-full">

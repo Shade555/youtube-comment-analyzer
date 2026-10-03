@@ -142,6 +142,7 @@ export function Dashboard({ onLogout }: DashboardProps) {
                 />
                 <WordCloud 
                   emotionDistribution={analysisData?.emotion_distribution}
+                  comments={analysisData?.comments}
                 />
               </div>
             </div>
