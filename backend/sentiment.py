@@ -6,6 +6,9 @@ from .preprocessing import is_devanagari, preprocess_pure_hindi, preprocess_hing
 
 MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'model')
 
+# --- TOGGLE: Set to False if you want to analyze both Hindi and Hinglish comments ---
+ONLY_SHOW_HINDI = True
+
 # Model placeholders
 hinglish_tfidf = None
 hinglish_model = None
@@ -58,6 +61,17 @@ def unified_predict(text: str) -> dict:
             "processed_text": text,
             "emotion_model": "Mock Model",
             "emotions": ["neutral"],
+            "sarcasm_label": 0,
+            "sarcasm_probability": 0.0
+        }
+        
+    if ONLY_SHOW_HINDI and not is_devanagari(text):
+        # By returning None for processed_text, main.py will automatically skip this comment
+        return {
+            "text": text,
+            "processed_text": None,
+            "emotion_model": "Skipped",
+            "emotions": [],
             "sarcasm_label": 0,
             "sarcasm_probability": 0.0
         }
