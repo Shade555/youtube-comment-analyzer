@@ -11,6 +11,53 @@ interface CommentFiltersProps {
   setSortOrder: (val: string) => void;
 }
 
+// Full catalog of individual emotions supported by the NLP models
+const ALL_INDIVIDUAL_EMOTIONS = [
+  "Admiration",
+  "Amusement",
+  "Anger",
+  "Annoyance",
+  "Approval",
+  "Caring",
+  "Confusion",
+  "Curiosity",
+  "Desire",
+  "Disappointment",
+  "Disapproval",
+  "Disgust",
+  "Embarrassment",
+  "Excitement",
+  "Fear",
+  "Gratitude",
+  "Grief",
+  "Joy",
+  "Love",
+  "Nervousness",
+  "Optimism",
+  "Pride",
+  "Realization",
+  "Relief",
+  "Remorse",
+  "Sadness",
+  "Surprise"
+];
+
+const POSITIVE_SET = new Set([
+  "admiration", "amusement", "approval", "caring", "desire", 
+  "excitement", "gratitude", "joy", "love", "optimism", 
+  "pride", "relief", "positive"
+]);
+
+const NEGATIVE_SET = new Set([
+  "anger", "annoyance", "disappointment", "disapproval", "disgust", 
+  "embarrassment", "fear", "grief", "nervousness", "remorse", 
+  "sadness", "negative"
+]);
+
+const NEUTRAL_SET = new Set([
+  "neutral", "realization", "curiosity", "confusion", "surprise"
+]);
+
 export function CommentFilters({ 
   comments = [], 
   searchQuery, 
@@ -24,12 +71,34 @@ export function CommentFilters({
   const [showSentimentDropdown, setShowSentimentDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  // Extract all distinct specific emotions present in comments
-  const uniqueEmotions = Array.from(
-    new Set(
-      comments.flatMap(c => (c.emotions || []).map((e: string) => e.charAt(0).toUpperCase() + e.slice(1).toLowerCase()))
-    )
-  ).filter(Boolean).sort();
+  // Combine full model emotions list with any distinct emotions in comments
+  const allEmotionsList = Array.from(
+    new Set([
+      ...ALL_INDIVIDUAL_EMOTIONS,
+      ...comments.flatMap(c => (c.emotions || []).map((e: string) => e.charAt(0).toUpperCase() + e.slice(1).toLowerCase()))
+    ])
+  ).filter(e => e !== "Neutral").sort();
+
+  // Counts for each sentiment/emotion in current comments
+  const getCountForEmotion = (emotionName: string) => {
+    if (!comments || comments.length === 0) return 0;
+    const lower = emotionName.toLowerCase();
+    return comments.filter(c => 
+      (c.emotions || []).some((e: string) => e.toLowerCase() === lower)
+    ).length;
+  };
+
+  const positiveCount = comments.filter(c => 
+    (c.emotions || []).some((e: string) => POSITIVE_SET.has(e.toLowerCase()))
+  ).length;
+
+  const negativeCount = comments.filter(c => 
+    (c.emotions || []).some((e: string) => NEGATIVE_SET.has(e.toLowerCase()))
+  ).length;
+
+  const neutralCount = comments.filter(c => 
+    (c.emotions || []).some((e: string) => NEUTRAL_SET.has(e.toLowerCase()))
+  ).length;
 
   const handleDownloadCSV = () => {
     if (!comments || comments.length === 0) return;
@@ -93,16 +162,17 @@ export function CommentFilters({
             {getSentimentDisplayLabel()} <ChevronDown size={14} className="text-gray-500" />
           </button>
           {showSentimentDropdown && (
-            <div className="absolute top-full left-0 mt-1 w-52 max-h-72 overflow-y-auto bg-[#1f2130] border border-[#262837] rounded-lg shadow-xl z-30 py-1 divide-y divide-[#262837]/60">
+            <div className="absolute top-full left-0 mt-1 w-64 max-h-80 overflow-y-auto bg-[#1f2130] border border-[#262837] rounded-lg shadow-xl z-30 py-1 divide-y divide-[#262837]/60">
               {/* General Sentiment Buckets */}
               <div className="py-1">
                 <div
                   onMouseDown={() => { setSentimentFilter('All'); setShowSentimentDropdown(false); }}
-                  className={`px-3 py-1.5 text-sm cursor-pointer transition-colors ${
+                  className={`px-3 py-1.5 text-sm cursor-pointer transition-colors flex items-center justify-between ${
                     sentimentFilter === 'All' ? 'bg-indigo-600/30 text-indigo-400 font-medium' : 'text-gray-300 hover:bg-[#2a2d40] hover:text-white'
                   }`}
                 >
-                  All Sentiments
+                  <span>All Sentiments</span>
+                  {comments.length > 0 && <span className="text-xs text-gray-500">{comments.length}</span>}
                 </div>
                 <div
                   onMouseDown={() => { setSentimentFilter('Positive'); setShowSentimentDropdown(false); }}
@@ -110,8 +180,11 @@ export function CommentFilters({
                     sentimentFilter === 'Positive' ? 'bg-indigo-600/30 text-indigo-400 font-medium' : 'text-gray-300 hover:bg-[#2a2d40] hover:text-white'
                   }`}
                 >
-                  <span>Positive (All)</span>
-                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span>Positive (All)</span>
+                  </div>
+                  {comments.length > 0 && <span className="text-xs text-gray-500">{positiveCount}</span>}
                 </div>
                 <div
                   onMouseDown={() => { setSentimentFilter('Negative'); setShowSentimentDropdown(false); }}
@@ -119,8 +192,11 @@ export function CommentFilters({
                     sentimentFilter === 'Negative' ? 'bg-indigo-600/30 text-indigo-400 font-medium' : 'text-gray-300 hover:bg-[#2a2d40] hover:text-white'
                   }`}
                 >
-                  <span>Negative (All)</span>
-                  <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                    <span>Negative (All)</span>
+                  </div>
+                  {comments.length > 0 && <span className="text-xs text-gray-500">{negativeCount}</span>}
                 </div>
                 <div
                   onMouseDown={() => { setSentimentFilter('Neutral'); setShowSentimentDropdown(false); }}
@@ -128,30 +204,39 @@ export function CommentFilters({
                     sentimentFilter === 'Neutral' ? 'bg-indigo-600/30 text-indigo-400 font-medium' : 'text-gray-300 hover:bg-[#2a2d40] hover:text-white'
                   }`}
                 >
-                  <span>Neutral</span>
-                  <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                    <span>Neutral</span>
+                  </div>
+                  {comments.length > 0 && <span className="text-xs text-gray-500">{neutralCount}</span>}
                 </div>
               </div>
 
-              {/* Specific Emotions in Current Comments */}
-              {uniqueEmotions.length > 0 && (
-                <div className="py-1">
-                  <div className="px-3 py-1 text-[10px] font-semibold tracking-wider text-gray-500 uppercase">
-                    Specific Emotions ({uniqueEmotions.length})
-                  </div>
-                  {uniqueEmotions.map(opt => (
+              {/* All Individual Emotions */}
+              <div className="py-1">
+                <div className="px-3 py-1 text-[10px] font-semibold tracking-wider text-gray-500 uppercase">
+                  Individual Emotions ({allEmotionsList.length})
+                </div>
+                {allEmotionsList.map(opt => {
+                  const count = getCountForEmotion(opt);
+                  return (
                     <div 
                       key={opt}
                       onMouseDown={() => { setSentimentFilter(opt); setShowSentimentDropdown(false); }}
-                      className={`px-3 py-1.5 text-sm cursor-pointer transition-colors ${
+                      className={`px-3 py-1.5 text-sm cursor-pointer transition-colors flex items-center justify-between ${
                         sentimentFilter === opt ? 'bg-indigo-600/30 text-indigo-400 font-medium' : 'text-gray-300 hover:bg-[#2a2d40] hover:text-white'
                       }`}
                     >
-                      {opt}
+                      <span>{opt}</span>
+                      {comments.length > 0 && (
+                        <span className={`text-xs ${count > 0 ? 'text-indigo-400 font-medium' : 'text-gray-600'}`}>
+                          {count}
+                        </span>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
