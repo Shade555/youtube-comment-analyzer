@@ -67,9 +67,15 @@ export function History({ onLogout }: HistoryProps) {
   };
 
   const getKPIStats = (data: AnalysisDetail) => {
-    const posEmotions = ["Admiration", "Amusement", "Approval", "Caring", "Desire", "Excitement", "Gratitude", "Joy", "Love", "Optimism", "Pride", "Relief"];
-    const negEmotions = ["Anger", "Annoyance", "Disappointment", "Disapproval", "Disgust", "Embarrassment", "Fear", "Grief", "Nervousness", "Remorse", "Sadness"];
-    const neuEmotions = ["Neutral", "Realization"];
+    const posEmotions = [
+      "Joy", "Grateful", "Hopeful", "Confident", "Impressed", "Compassion", "Anticipation",
+      "Admiration", "Amusement", "Approval", "Caring", "Desire", "Excitement", "Gratitude", "Love", "Optimism", "Pride", "Relief"
+    ];
+    const negEmotions = [
+      "Anger", "Annoyed", "Apprehensive", "Disgusted", "Fear", "Guilty", "Sad",
+      "Annoyance", "Disappointment", "Disapproval", "Disgust", "Embarrassment", "Grief", "Nervousness", "Remorse", "Sadness"
+    ];
+    const neuEmotions = ["Neutral", "Confused", "Surprised", "Realization", "Curiosity"];
     let pos = 0, neg = 0, neu = 0, misc = 0;
     Object.entries(data.emotion_distribution || {}).forEach(([emotion, count]) => {
       const e = emotion.charAt(0).toUpperCase() + emotion.slice(1);

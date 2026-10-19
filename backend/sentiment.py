@@ -10,52 +10,59 @@ MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'model')
 # --- TOGGLE: Set to False if you want to analyze both Hindi and Hinglish comments ---
 ONLY_SHOW_HINDI = True
 
-# Emotion polarity sets for consistency checking
+# Emotion polarity sets for consistency checking (EmoInHindi 17 classes + social emojis)
 POSITIVE_SET = {
-    "amusement", "joy", "love", "admiration", "gratitude", 
-    "optimism", "pride", "relief", "approval", "caring", "excitement"
+    "joy", "grateful", "hopeful", "confident", "impressed", 
+    "compassion", "anticipation", "amusement", "love", "admiration",
+    "approval", "caring", "excitement", "optimism", "pride", "relief", "positive"
 }
 
 NEGATIVE_SET = {
-    "sadness", "anger", "disappointment", "disapproval", 
-    "disgust", "fear", "grief", "remorse", "annoyance"
+    "anger", "annoyed", "apprehensive", "disgusted", "fear", 
+    "guilty", "sad", "sadness", "disappointment", "disapproval", 
+    "disgust", "grief", "remorse", "annoyance", "negative"
 }
 
-# Weak background classes in EmoHi that often trigger false positives on short slang/jokes
-PASSIVE_NOISE = {"caring", "realization", "neutral", "confusion", "curiosity"}
+# Weak background classes that can trigger false positives on short slang/jokes
+PASSIVE_NOISE = {"neutral", "confused", "caring", "realization"}
 
 # Model placeholders
 hinglish_tfidf = None
 hinglish_model = None
-hindi_tfidf = None
+
+# Pure Hindi (EmoInHindi bundle) placeholders
+hindi_vectorizer = None
 hindi_model = None
-hindi_mlb = None
+hindi_labels = []
+hindi_thresholds = np.array([])
+
+# Sarcasm placeholders
 sarcasm_tfidf = None
 sarcasm_model = None
-hindi_label_mapping = {}
-hindi_threshold = 0.0
 
 def load_models():
-    global hinglish_tfidf, hinglish_model, hindi_tfidf, hindi_model
-    global hindi_mlb, sarcasm_tfidf, sarcasm_model, hindi_label_mapping, hindi_threshold
+    global hinglish_tfidf, hinglish_model
+    global hindi_vectorizer, hindi_model, hindi_labels, hindi_thresholds
+    global sarcasm_tfidf, sarcasm_model
     
     try:
-        # Load Hinglish
+        # 1. Load Hinglish Emotion Model
         hinglish_tfidf = joblib.load(os.path.join(MODEL_DIR, "hinglish_emotion_tfidf_vectorizer.pkl"))
         hinglish_model = joblib.load(os.path.join(MODEL_DIR, "hinglish_emotion_model.pkl"))
         
-        # Load Pure Hindi
-        hindi_tfidf = joblib.load(os.path.join(MODEL_DIR, "hindi_emotion_tfidf_vectorizer.pkl"))
-        hindi_model = joblib.load(os.path.join(MODEL_DIR, "hindi_emotion_model.pkl"))
-        hindi_mlb = joblib.load(os.path.join(MODEL_DIR, "hindi_label_binarizer.pkl"))
-        
-        with open(os.path.join(MODEL_DIR, "hindi_label_mapping.json"), "r", encoding="utf-8") as f:
-            hindi_label_mapping = json.load(f)
+        # 2. Load Pure Hindi Model (EmoInHindi bundle)
+        bundle_path = os.path.join(MODEL_DIR, "emoinhindi", "model_bundle.joblib")
+        if not os.path.exists(bundle_path):
+            bundle_path = os.path.join(MODEL_DIR, "model_bundle.joblib")
             
-        with open(os.path.join(MODEL_DIR, "hindi_threshold.json"), "r") as f:
-            hindi_threshold = json.load(f)["threshold"]
+        hindi_bundle = joblib.load(bundle_path)
+        hindi_vectorizer = hindi_bundle["vectorizer"]
+        hindi_model = hindi_bundle["model"]
+        hindi_labels = hindi_bundle["labels"]
+        hindi_thresholds = np.asarray(hindi_bundle["thresholds"])
+        print(f"Successfully loaded EmoInHindi bundle with {len(hindi_labels)} labels.")
             
-        # Load Sarcasm
+        # 3. Load Sarcasm Model
         sarcasm_tfidf = joblib.load(os.path.join(MODEL_DIR, "sarcasm_tfidf_vectorizer.pkl"))
         sarcasm_model = joblib.load(os.path.join(MODEL_DIR, "sarcasm_model.pkl"))
         
@@ -68,10 +75,10 @@ load_models()
 def unified_predict(text: str) -> dict:
     """
     Routes the text to the appropriate emotion model and scores sarcasm independently.
-    Incorporates emoji-aware emotion cues to accurately capture social media sentiment.
+    Pure Hindi uses the EmoInHindi FeatureUnion + LinearSVC multi-label model bundle.
     """
     # Mock data fallback if models failed to load
-    if not hinglish_model or not hindi_model or not sarcasm_model:
+    if not hinglish_model or hindi_model is None or not sarcasm_model:
         return {
             "text": text,
             "processed_text": text,
@@ -93,7 +100,7 @@ def unified_predict(text: str) -> dict:
         }
         
     try:
-        # Extract emoji emotion cues (primary signal for social media / YouTube comments)
+        # Extract emoji emotion cues (essential for social media / YouTube comments)
         emoji_emotions = extract_emoji_emotions(text)
 
         # 1. Emotion Routing
@@ -104,46 +111,41 @@ def unified_predict(text: str) -> dict:
             if not processed:
                 emotions = emoji_emotions if emoji_emotions else ["neutral"]
             else:
-                x = hindi_tfidf.transform([processed])
-                if x.nnz == 0:
-                    emotions = emoji_emotions if emoji_emotions else ["neutral"]
-                else:
-                    scores = hindi_model.decision_function(x)[0]
-                    prediction = (scores >= hindi_threshold).astype(int)
-                    active_indices = np.where(prediction == 1)[0]
+                X = hindi_vectorizer.transform([processed])
+                scores = hindi_model.decision_function(X)[0]
+                relative_margins = scores - hindi_thresholds
+                selected = [label for label, rel in zip(hindi_labels, relative_margins) if rel >= 0]
+                if not selected:
+                    selected = [hindi_labels[int(np.argmax(relative_margins))]]
+                
+                model_emotions = selected
+
+                if emoji_emotions:
+                    primary_emoji = emoji_emotions[0]
+                    is_pos_emoji = primary_emoji in POSITIVE_SET
+                    is_neg_emoji = primary_emoji in NEGATIVE_SET
                     
-                    # Fallback to strongest emotion if none pass threshold
-                    if len(active_indices) == 0:
-                        active_indices = [int(np.argmax(scores))]
-                        
-                    model_emotions = [hindi_label_mapping[str(hindi_mlb.classes_[idx])] for idx in active_indices]
+                    # Filter out contradictory or passive background noise from the ML model
+                    filtered_model = []
+                    for me in model_emotions:
+                        if is_pos_emoji and me in NEGATIVE_SET:
+                            continue  # Don't pair laughing emoji with sadness/anger
+                        if is_neg_emoji and me in POSITIVE_SET:
+                            continue  # Don't pair crying emoji with joy/amusement
+                        if me in PASSIVE_NOISE:
+                            continue  # Suppress weak background labels on short emoji comments
+                        filtered_model.append(me)
 
-                    if emoji_emotions:
-                        primary_emoji = emoji_emotions[0]
-                        is_pos_emoji = primary_emoji in POSITIVE_SET
-                        is_neg_emoji = primary_emoji in NEGATIVE_SET
-                        
-                        # Filter out contradictory or passive background noise from the ML model
-                        filtered_model = []
-                        for me in model_emotions:
-                            if is_pos_emoji and me in NEGATIVE_SET:
-                                continue  # Don't pair laughing emoji with sadness/anger
-                            if is_neg_emoji and me in POSITIVE_SET:
-                                continue  # Don't pair crying emoji with joy/amusement
-                            if me in PASSIVE_NOISE:
-                                continue  # Suppress weak background labels on short emoji comments
-                            filtered_model.append(me)
-
-                        # If comment is short or has few TF-IDF features, emojis represent the primary intent
-                        if token_count <= 7 or x.nnz <= 2:
-                            emotions = emoji_emotions[:2]
-                        else:
-                            combined = emoji_emotions + filtered_model
-                            emotions = list(dict.fromkeys(combined))[:2]
+                    # If comment is short or has few features, emojis represent the primary intent
+                    if token_count <= 7 or X.nnz <= 2:
+                        emotions = emoji_emotions[:2]
                     else:
-                        emotions = model_emotions
+                        combined = emoji_emotions + filtered_model
+                        emotions = list(dict.fromkeys(combined))[:2]
+                else:
+                    emotions = model_emotions
             
-            emotion_model_used = "Pure Hindi"
+            emotion_model_used = "Pure Hindi (EmoInHindi)"
         else:
             processed = preprocess_hinglish_final(text)
             token_count = len(processed.split()) if processed else 0

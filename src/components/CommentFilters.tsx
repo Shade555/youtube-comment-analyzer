@@ -11,15 +11,29 @@ interface CommentFiltersProps {
   setSortOrder: (val: string) => void;
 }
 
-// Full catalog of individual emotions supported by the NLP models
+// Full catalog of individual emotions supported by the NLP models (EmoInHindi 17 + Hinglish & Social Emojis)
 const ALL_INDIVIDUAL_EMOTIONS = [
+  "Anger",
+  "Annoyed",
+  "Anticipation",
+  "Apprehensive",
+  "Compassion",
+  "Confident",
+  "Confused",
+  "Disgusted",
+  "Fear",
+  "Grateful",
+  "Guilty",
+  "Hopeful",
+  "Impressed",
+  "Joy",
+  "Sad",
+  "Surprised",
   "Admiration",
   "Amusement",
-  "Anger",
   "Annoyance",
   "Approval",
   "Caring",
-  "Confusion",
   "Curiosity",
   "Desire",
   "Disappointment",
@@ -27,10 +41,8 @@ const ALL_INDIVIDUAL_EMOTIONS = [
   "Disgust",
   "Embarrassment",
   "Excitement",
-  "Fear",
   "Gratitude",
   "Grief",
-  "Joy",
   "Love",
   "Nervousness",
   "Optimism",
@@ -43,19 +55,21 @@ const ALL_INDIVIDUAL_EMOTIONS = [
 ];
 
 const POSITIVE_SET = new Set([
-  "admiration", "amusement", "approval", "caring", "desire", 
-  "excitement", "gratitude", "joy", "love", "optimism", 
+  "joy", "grateful", "hopeful", "confident", "impressed", 
+  "compassion", "anticipation", "admiration", "amusement", "approval", 
+  "caring", "desire", "excitement", "gratitude", "love", "optimism", 
   "pride", "relief", "positive"
 ]);
 
 const NEGATIVE_SET = new Set([
-  "anger", "annoyance", "disappointment", "disapproval", "disgust", 
-  "embarrassment", "fear", "grief", "nervousness", "remorse", 
-  "sadness", "negative"
+  "anger", "annoyed", "apprehensive", "disgusted", "fear", 
+  "guilty", "sad", "sadness", "annoyance", "disappointment", 
+  "disapproval", "disgust", "embarrassment", "grief", "nervousness", 
+  "remorse", "negative"
 ]);
 
 const NEUTRAL_SET = new Set([
-  "neutral", "realization", "curiosity", "confusion", "surprise"
+  "neutral", "confused", "surprised", "realization", "curiosity", "confusion", "surprise"
 ]);
 
 export function CommentFilters({ 

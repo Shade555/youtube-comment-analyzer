@@ -7,7 +7,7 @@ This document provides a highly detailed, beautifully formatted overview of the 
 
 ## 🎯 1. Features Overview
 * **🌐 Multilingual Language Routing:** Automatically detects the script of a YouTube comment. If it contains >30% Devanagari characters, it routes to the Pure Hindi model; otherwise, it routes to the Hinglish model.
-* **🇮🇳 Pure Hindi (EmoHi) Emotion Detection:** A multi-label classification system capable of identifying 28 distinct human emotions (e.g., Admiration, Anger, Relief) from Devanagari text.
+* **🇮🇳 Pure Hindi (EmoInHindi - LREC 2022) Emotion Detection:** A multi-label classification system trained on the published EmoInHindi dialogue dataset, identifying 17 distinct human emotions (e.g., Joy, Grateful, Hopeful, Confident, Compassion, Impressed, Sad, Anger, Fear) from Devanagari text using a hybrid Word + Subword Char TF-IDF FeatureUnion and One-vs-Rest Linear SVM.
 * **🔤 Hinglish Emotion Detection:** A single-label classification system that categorizes code-mixed (Hindi + English) text into 10 fundamental emotions.
 * **😏 Sarcasm Detection:** An independent binary classifier that flags comments as sarcastic or non-sarcastic.
 * **📊 Interactive React Dashboard:** Real-time visualization of YouTube comments using dynamic Pie Charts, a Word Cloud (scaled by frequency), and KPI metric cards.
@@ -57,16 +57,16 @@ Before a model can understand text, the text must be mathematically cleaned. Our
 
 ### B. Algorithm (`backend/sentiment.py`)
 1. **TF-IDF with N-Grams (Lines 72, 89, 100):** This algorithm converts raw text into numerical arrays. It gives high weight to words that appear frequently in a specific comment but rarely across the whole dataset. We configured the vectorizers to extract Bigrams (`ngram_range=(1, 2)`) in the training notebook.
-2. **Linear SVM (Lines 74, 91):** Used for the Emotion models. SVM plots the TF-IDF vectors in a high-dimensional space and finds the best hyperplane (line) that separates different emotions (e.g., Joy vs. Anger). 
-3. **One-Vs-Rest (Multi-Label):** For the 28-class Hindi model, we used a One-Vs-Rest wrapper around the SVM. It trains 28 separate binary SVMs allowing a single comment to have multiple emotions.
-4. **Logistic Regression (Line 101):** Used for the binary Sarcasm model due to its high speed and probabilistic output reliability for binary classification.
+2. **Linear SVM:** Used for the Emotion models. SVM plots the TF-IDF vectors in a high-dimensional space and finds the best hyperplane (line) that separates different emotions.
+3. **One-Vs-Rest FeatureUnion (Multi-Label):** For Pure Hindi, we use the EmoInHindi architecture consisting of a FeatureUnion combining word n-grams (1, 2) and character n-grams (2, 5) passed into a One-Vs-Rest Linear SVM with 17 tuned per-class decision thresholds.
+4. **Logistic Regression:** Used for the binary Sarcasm model due to its high speed and probabilistic output reliability for binary classification.
 
 ### C. The Application Flow (`backend/main.py`)
 1. **User Input:** User pastes a YouTube URL in the React UI.
 2. **Data Fetching:** FastAPI calls the YouTube Data API to fetch the top comments (`main.py`, line 155).
 3. **Language Routing:** The backend checks the percentage of Devanagari characters in each comment to decide which model to use (`preprocessing.py`, line 8).
 4. **Inference (`sentiment.py`, line 60: `unified_predict`):** 
-   * >30% Devanagari ➔ Pure Hindi Preprocessing ➔ Hindi TF-IDF ➔ 28-Class SVM.
+   * >30% Devanagari ➔ Pure Hindi Preprocessing ➔ EmoInHindi FeatureUnion ➔ 17-Class One-vs-Rest SVM.
    * <30% Devanagari ➔ Hinglish Preprocessing ➔ Hinglish TF-IDF ➔ 10-Class SVM.
    * All comments ➔ Sarcasm TF-IDF ➔ Logistic Regression.
 5. **Aggregation & Response:** The backend counts the emotions, generates statistics (`analytics.py`), and sends JSON back to the frontend (`main.py`, line 176).

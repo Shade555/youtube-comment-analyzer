@@ -7,19 +7,21 @@ interface CommentsSectionProps {
 }
 
 const POSITIVE_EMOTIONS = new Set([
-  "admiration", "amusement", "approval", "caring", "desire", 
-  "excitement", "gratitude", "joy", "love", "optimism", 
+  "joy", "grateful", "hopeful", "confident", "impressed", 
+  "compassion", "anticipation", "admiration", "amusement", "approval", 
+  "caring", "desire", "excitement", "gratitude", "love", "optimism", 
   "pride", "relief", "positive"
 ]);
 
 const NEGATIVE_EMOTIONS = new Set([
-  "anger", "annoyance", "disappointment", "disapproval", "disgust", 
-  "embarrassment", "fear", "grief", "nervousness", "remorse", 
-  "sadness", "negative"
+  "anger", "annoyed", "apprehensive", "disgusted", "fear", 
+  "guilty", "sad", "sadness", "annoyance", "disappointment", 
+  "disapproval", "disgust", "embarrassment", "grief", "nervousness", 
+  "remorse", "negative"
 ]);
 
 const NEUTRAL_EMOTIONS = new Set([
-  "neutral", "realization", "curiosity", "confusion", "surprise"
+  "neutral", "confused", "surprised", "realization", "curiosity", "confusion", "surprise"
 ]);
 
 export function CommentsSection({ comments = [] }: CommentsSectionProps) {
