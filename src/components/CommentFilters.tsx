@@ -24,6 +24,13 @@ export function CommentFilters({
   const [showSentimentDropdown, setShowSentimentDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
+  // Extract all distinct specific emotions present in comments
+  const uniqueEmotions = Array.from(
+    new Set(
+      comments.flatMap(c => (c.emotions || []).map((e: string) => e.charAt(0).toUpperCase() + e.slice(1).toLowerCase()))
+    )
+  ).filter(Boolean).sort();
+
   const handleDownloadCSV = () => {
     if (!comments || comments.length === 0) return;
     
@@ -53,6 +60,13 @@ export function CommentFilters({
     document.body.removeChild(link);
   };
 
+  const getSentimentDisplayLabel = () => {
+    if (sentimentFilter === "All") return "All Sentiments";
+    if (sentimentFilter === "Positive") return "Positive (All)";
+    if (sentimentFilter === "Negative") return "Negative (All)";
+    return sentimentFilter;
+  };
+
   return (
     <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4 w-full">
       <div className="flex flex-wrap items-center gap-3 w-full xl:flex-1">
@@ -69,26 +83,75 @@ export function CommentFilters({
           />
         </div>
 
-        {/* Sentiment Filter */}
+        {/* Sentiment Filter Dropdown */}
         <div className="relative">
           <button 
             onClick={() => setShowSentimentDropdown(!showSentimentDropdown)}
             onBlur={() => setTimeout(() => setShowSentimentDropdown(false), 200)}
             className="flex items-center gap-2 px-3 py-2 border border-[#262837] rounded-lg bg-[#1f2130] text-sm text-gray-300 hover:text-white transition-colors"
           >
-            {sentimentFilter === 'All' ? 'All Sentiments' : sentimentFilter} <ChevronDown size={14} className="text-gray-500" />
+            {getSentimentDisplayLabel()} <ChevronDown size={14} className="text-gray-500" />
           </button>
           {showSentimentDropdown && (
-            <div className="absolute top-full left-0 mt-1 w-40 bg-[#1f2130] border border-[#262837] rounded-lg shadow-xl z-20 overflow-hidden">
-              {['All', ...Array.from(new Set(comments.map(c => { const e = c.emotions?.[0] || 'Neutral'; return e.charAt(0).toUpperCase() + e.slice(1); }))).sort()].map(opt => (
-                <div 
-                  key={opt}
-                  onMouseDown={() => setSentimentFilter(opt)}
-                  className="px-4 py-2 text-sm text-gray-300 hover:bg-[#2a2d40] hover:text-white cursor-pointer"
+            <div className="absolute top-full left-0 mt-1 w-52 max-h-72 overflow-y-auto bg-[#1f2130] border border-[#262837] rounded-lg shadow-xl z-30 py-1 divide-y divide-[#262837]/60">
+              {/* General Sentiment Buckets */}
+              <div className="py-1">
+                <div
+                  onMouseDown={() => { setSentimentFilter('All'); setShowSentimentDropdown(false); }}
+                  className={`px-3 py-1.5 text-sm cursor-pointer transition-colors ${
+                    sentimentFilter === 'All' ? 'bg-indigo-600/30 text-indigo-400 font-medium' : 'text-gray-300 hover:bg-[#2a2d40] hover:text-white'
+                  }`}
                 >
-                  {opt}
+                  All Sentiments
                 </div>
-              ))}
+                <div
+                  onMouseDown={() => { setSentimentFilter('Positive'); setShowSentimentDropdown(false); }}
+                  className={`px-3 py-1.5 text-sm cursor-pointer transition-colors flex items-center justify-between ${
+                    sentimentFilter === 'Positive' ? 'bg-indigo-600/30 text-indigo-400 font-medium' : 'text-gray-300 hover:bg-[#2a2d40] hover:text-white'
+                  }`}
+                >
+                  <span>Positive (All)</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                </div>
+                <div
+                  onMouseDown={() => { setSentimentFilter('Negative'); setShowSentimentDropdown(false); }}
+                  className={`px-3 py-1.5 text-sm cursor-pointer transition-colors flex items-center justify-between ${
+                    sentimentFilter === 'Negative' ? 'bg-indigo-600/30 text-indigo-400 font-medium' : 'text-gray-300 hover:bg-[#2a2d40] hover:text-white'
+                  }`}
+                >
+                  <span>Negative (All)</span>
+                  <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                </div>
+                <div
+                  onMouseDown={() => { setSentimentFilter('Neutral'); setShowSentimentDropdown(false); }}
+                  className={`px-3 py-1.5 text-sm cursor-pointer transition-colors flex items-center justify-between ${
+                    sentimentFilter === 'Neutral' ? 'bg-indigo-600/30 text-indigo-400 font-medium' : 'text-gray-300 hover:bg-[#2a2d40] hover:text-white'
+                  }`}
+                >
+                  <span>Neutral</span>
+                  <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                </div>
+              </div>
+
+              {/* Specific Emotions in Current Comments */}
+              {uniqueEmotions.length > 0 && (
+                <div className="py-1">
+                  <div className="px-3 py-1 text-[10px] font-semibold tracking-wider text-gray-500 uppercase">
+                    Specific Emotions ({uniqueEmotions.length})
+                  </div>
+                  {uniqueEmotions.map(opt => (
+                    <div 
+                      key={opt}
+                      onMouseDown={() => { setSentimentFilter(opt); setShowSentimentDropdown(false); }}
+                      className={`px-3 py-1.5 text-sm cursor-pointer transition-colors ${
+                        sentimentFilter === opt ? 'bg-indigo-600/30 text-indigo-400 font-medium' : 'text-gray-300 hover:bg-[#2a2d40] hover:text-white'
+                      }`}
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -103,11 +166,11 @@ export function CommentFilters({
             <ArrowDownUp size={14} className="text-gray-500" /> {sortOrder} <ChevronDown size={14} className="text-gray-500" />
           </button>
           {showSortDropdown && (
-            <div className="absolute top-full left-0 mt-1 w-40 bg-[#1f2130] border border-[#262837] rounded-lg shadow-xl z-20 overflow-hidden">
+            <div className="absolute top-full left-0 mt-1 w-40 bg-[#1f2130] border border-[#262837] rounded-lg shadow-xl z-30 overflow-hidden">
               {['Most Liked', 'Newest', 'Oldest'].map(opt => (
                 <div 
                   key={opt}
-                  onMouseDown={() => setSortOrder(opt)}
+                  onMouseDown={() => { setSortOrder(opt); setShowSortDropdown(false); }}
                   className="px-4 py-2 text-sm text-gray-300 hover:bg-[#2a2d40] hover:text-white cursor-pointer"
                 >
                   {opt}

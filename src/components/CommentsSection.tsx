@@ -6,6 +6,22 @@ interface CommentsSectionProps {
   comments?: any[];
 }
 
+const POSITIVE_EMOTIONS = new Set([
+  "admiration", "amusement", "approval", "caring", "desire", 
+  "excitement", "gratitude", "joy", "love", "optimism", 
+  "pride", "relief", "positive"
+]);
+
+const NEGATIVE_EMOTIONS = new Set([
+  "anger", "annoyance", "disappointment", "disapproval", "disgust", 
+  "embarrassment", "fear", "grief", "nervousness", "remorse", 
+  "sadness", "negative"
+]);
+
+const NEUTRAL_EMOTIONS = new Set([
+  "neutral", "realization", "curiosity", "confusion", "surprise"
+]);
+
 export function CommentsSection({ comments = [] }: CommentsSectionProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sentimentFilter, setSentimentFilter] = useState("All");
@@ -26,8 +42,21 @@ export function CommentsSection({ comments = [] }: CommentsSectionProps) {
     // Sentiment filter
     if (sentimentFilter !== "All") {
       result = result.filter(c => {
-        const primaryEmotion = (c.emotions?.[0] || "neutral").toLowerCase();
-        return primaryEmotion === sentimentFilter.toLowerCase();
+        const commentEmotions = (c.emotions && c.emotions.length > 0)
+          ? c.emotions.map((e: string) => e.toLowerCase())
+          : ["neutral"];
+
+        if (sentimentFilter === "Positive") {
+          return commentEmotions.some((e: string) => POSITIVE_EMOTIONS.has(e));
+        }
+        if (sentimentFilter === "Negative") {
+          return commentEmotions.some((e: string) => NEGATIVE_EMOTIONS.has(e));
+        }
+        if (sentimentFilter === "Neutral") {
+          return commentEmotions.some((e: string) => NEUTRAL_EMOTIONS.has(e));
+        }
+        // Specific individual emotion (e.g. "Admiration", "Joy")
+        return commentEmotions.some((e: string) => e === sentimentFilter.toLowerCase());
       });
     }
 

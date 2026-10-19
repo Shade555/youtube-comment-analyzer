@@ -8,11 +8,13 @@
   },
   "pure_hindi": {
     "model": "One-vs-Rest Linear SVM",
-    "threshold": 0.15,
-    "hamming_loss": 0.06780185350955716,
-    "micro_f1": 0.31894214876033056,
-    "macro_f1": 0.23637935559906956,
-    "jaccard": 0.2671034963930283
+    "threshold": 0.3,
+    "hamming_loss": 0.0619,
+    "micro_f1": 0.3301,
+    "macro_f1": 0.2506,
+    "jaccard": 0.3046,
+    "subset_accuracy": 0.216,
+    "label_accuracy": 0.9381
   },
   "sarcasm": {
     "model": "Logistic Regression",
