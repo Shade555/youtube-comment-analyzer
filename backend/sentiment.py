@@ -46,12 +46,8 @@ def load_models():
     global hindi_vectorizer, hindi_model, hindi_labels, hindi_thresholds
     global sarcasm_tfidf, sarcasm_model
     
+    # 1. Primary: Load Pure Hindi Model (EmoInHindi bundle)
     try:
-        # 1. Load Hinglish Emotion Model
-        hinglish_tfidf = joblib.load(os.path.join(MODEL_DIR, "hinglish_emotion_tfidf_vectorizer.pkl"))
-        hinglish_model = joblib.load(os.path.join(MODEL_DIR, "hinglish_emotion_model.pkl"))
-        
-        # 2. Load Pure Hindi Model (EmoInHindi bundle)
         bundle_path = os.path.join(MODEL_DIR, "emoinhindi", "model_bundle.joblib")
         if not os.path.exists(bundle_path):
             bundle_path = os.path.join(MODEL_DIR, "model_bundle.joblib")
@@ -71,24 +67,40 @@ def load_models():
             hindi_thresholds = np.asarray(hindi_bundle["thresholds"])
             
         print(f"Successfully loaded EmoInHindi bundle with {len(hindi_labels)} labels.")
-            
-        # 3. Load Sarcasm Model
-        sarcasm_tfidf = joblib.load(os.path.join(MODEL_DIR, "sarcasm_tfidf_vectorizer.pkl"))
-        sarcasm_model = joblib.load(os.path.join(MODEL_DIR, "sarcasm_model.pkl"))
-        
-        print("Successfully loaded all 3 models and artifacts.")
     except Exception as e:
-        print(f"Error loading models: {e}. Inference will return mock data.")
+        print(f"Error loading EmoInHindi model: {e}. Inference will return mock data.")
+
+    # 2. Legacy / Optional: Load Hinglish Emotion Model if available
+    try:
+        hinglish_tfidf_path = os.path.join(MODEL_DIR, "hinglish_emotion_tfidf_vectorizer.pkl")
+        hinglish_model_path = os.path.join(MODEL_DIR, "hinglish_emotion_model.pkl")
+        if os.path.exists(hinglish_tfidf_path) and os.path.exists(hinglish_model_path):
+            hinglish_tfidf = joblib.load(hinglish_tfidf_path)
+            hinglish_model = joblib.load(hinglish_model_path)
+            print("Loaded legacy Hinglish emotion model.")
+    except Exception as e:
+        print(f"Notice: Legacy Hinglish emotion model not loaded ({e}).")
+
+    # 3. Legacy / Optional: Load Sarcasm Model if available
+    try:
+        sarcasm_tfidf_path = os.path.join(MODEL_DIR, "sarcasm_tfidf_vectorizer.pkl")
+        sarcasm_model_path = os.path.join(MODEL_DIR, "sarcasm_model.pkl")
+        if os.path.exists(sarcasm_tfidf_path) and os.path.exists(sarcasm_model_path):
+            sarcasm_tfidf = joblib.load(sarcasm_tfidf_path)
+            sarcasm_model = joblib.load(sarcasm_model_path)
+            print("Loaded legacy Sarcasm model.")
+    except Exception as e:
+        print(f"Notice: Legacy Sarcasm model not loaded ({e}).")
 
 load_models()
 
 def unified_predict(text: str) -> dict:
     """
-    Routes the text to the appropriate emotion model and scores sarcasm independently.
-    Pure Hindi uses the EmoInHindi FeatureUnion + LinearSVC multi-label model bundle.
+    Predicts multi-label emotions using the EmoInHindi FeatureUnion + LinearSVC model bundle,
+    supplemented by emoji social cues and optional legacy models.
     """
-    # Mock data fallback if models failed to load
-    if not hinglish_model or hindi_model is None or not sarcasm_model:
+    # Mock data fallback if primary model failed to load
+    if hindi_model is None:
         return {
             "text": text,
             "processed_text": text,
@@ -163,31 +175,38 @@ def unified_predict(text: str) -> dict:
             if not processed:
                 emotions = emoji_emotions if emoji_emotions else ["neutral"]
             else:
-                x = hinglish_tfidf.transform([processed])
-                if x.nnz == 0:
-                    emotions = emoji_emotions if emoji_emotions else ["neutral"]
-                else:
-                    model_emotion = str(hinglish_model.predict(x)[0])
-                    if emoji_emotions:
-                        primary_emoji = emoji_emotions[0]
-                        if token_count <= 5 or (primary_emoji in POSITIVE_SET and model_emotion in NEGATIVE_SET) or (primary_emoji in NEGATIVE_SET and model_emotion in POSITIVE_SET):
-                            emotions = emoji_emotions[:2]
-                        else:
-                            emotions = list(dict.fromkeys([primary_emoji, model_emotion]))[:2]
+                if hinglish_model and hinglish_tfidf:
+                    x = hinglish_tfidf.transform([processed])
+                    if x.nnz == 0:
+                        emotions = emoji_emotions if emoji_emotions else ["neutral"]
                     else:
-                        emotions = [model_emotion]
+                        model_emotion = str(hinglish_model.predict(x)[0])
+                        if emoji_emotions:
+                            primary_emoji = emoji_emotions[0]
+                            if token_count <= 5 or (primary_emoji in POSITIVE_SET and model_emotion in NEGATIVE_SET) or (primary_emoji in NEGATIVE_SET and model_emotion in POSITIVE_SET):
+                                emotions = emoji_emotions[:2]
+                            else:
+                                emotions = list(dict.fromkeys([primary_emoji, model_emotion]))[:2]
+                        else:
+                            emotions = [model_emotion]
+                else:
+                    emotions = emoji_emotions if emoji_emotions else ["neutral"]
             
-            emotion_model_used = "Hinglish"
+            emotion_model_used = "Hinglish" if hinglish_model else "Pure Hindi (EmoInHindi)"
             
-        # 2. Sarcasm (Independent)
-        sarcasm_processed = preprocess_hinglish_final(text)
-        if not sarcasm_processed:
-            sarcasm_label = 0
-            sarcasm_prob = 0.0
-        else:
-            sarcasm_x = sarcasm_tfidf.transform([sarcasm_processed])
-            sarcasm_label = int(sarcasm_model.predict(sarcasm_x)[0])
-            sarcasm_prob = float(sarcasm_model.predict_proba(sarcasm_x)[0, 1]) if hasattr(sarcasm_model, "predict_proba") else 0.0
+        # 2. Sarcasm (Optional / Legacy)
+        sarcasm_label = 0
+        sarcasm_prob = 0.0
+        if sarcasm_model and sarcasm_tfidf:
+            sarcasm_processed = preprocess_hinglish_final(text)
+            if sarcasm_processed:
+                try:
+                    sarcasm_x = sarcasm_tfidf.transform([sarcasm_processed])
+                    sarcasm_label = int(sarcasm_model.predict(sarcasm_x)[0])
+                    sarcasm_prob = float(sarcasm_model.predict_proba(sarcasm_x)[0, 1]) if hasattr(sarcasm_model, "predict_proba") else 0.0
+                except Exception:
+                    sarcasm_label = 0
+                    sarcasm_prob = 0.0
             
         return {
             "text": text,
