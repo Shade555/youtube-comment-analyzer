@@ -18,14 +18,11 @@ negations = {
 
 def is_devanagari(text: str) -> bool:
     """
-    Returns True if at least 30% of the non-whitespace characters are Devanagari.
+    Returns True if the text contains Devanagari script characters.
     """
-    if not text: return False
-    chars = [c for c in str(text) if not c.isspace()]
-    if not chars: return False
-    
-    devanagari_count = sum("\u0900" <= c <= "\u097F" for c in chars)
-    return (devanagari_count / len(chars)) >= 0.30
+    if not text:
+        return False
+    return any("\u0900" <= c <= "\u097F" for c in str(text))
 
 def preprocess_hinglish(text: str) -> str:
     if not isinstance(text, str) or not text: return ""

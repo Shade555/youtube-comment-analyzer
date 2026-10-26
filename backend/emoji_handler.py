@@ -48,9 +48,9 @@ EMOJI_EMOTION_MAP = {
     "✨": "admiration",
     "⭐": "admiration",
     
-    # Gratitude / Prayer / Respect
-    "🙏": "gratitude",
-    "🤝": "gratitude",
+    # Grateful / Prayer / Respect
+    "🙏": "grateful",
+    "🤝": "grateful",
     
     # Joy / Happiness
     "😊": "joy",
@@ -60,14 +60,14 @@ EMOJI_EMOTION_MAP = {
     "🥳": "joy",
     "🎉": "joy",
     
-    # Sadness / Heartbreak
-    "😭": "sadness",
-    "😢": "sadness",
-    "🥺": "sadness",
-    "😞": "sadness",
-    "😔": "sadness",
-    "💔": "sadness",
-    "😿": "sadness",
+    # Sad / Heartbreak
+    "😭": "sad",
+    "😢": "sad",
+    "🥺": "sad",
+    "😞": "sad",
+    "😔": "sad",
+    "💔": "sad",
+    "😿": "sad",
     
     # Anger / Outrage
     "😡": "anger",
@@ -81,24 +81,24 @@ EMOJI_EMOTION_MAP = {
     "😰": "fear",
     "😱": "fear",
     
-    # Disgust
-    "🤢": "disgust",
-    "🤮": "disgust",
-    "💩": "disgust",
+    # Disgusted
+    "🤢": "disgusted",
+    "🤮": "disgusted",
+    "💩": "disgusted",
     
-    # Surprise / Shock
-    "😮": "surprise",
-    "😲": "surprise",
-    "😯": "surprise",
-    "🤯": "surprise",
-    "😳": "surprise",
+    # Surprised / Shock
+    "😮": "surprised",
+    "😲": "surprised",
+    "😯": "surprised",
+    "🤯": "surprised",
+    "😳": "surprised",
 }
 
 # Text emoticons and acronyms
 TEXT_EMOTION_PATTERNS = [
     (re.compile(r"\b(lmao|lmfao|rofl|lol|xd|xd+)\b", re.IGNORECASE), "amusement"),
     (re.compile(r"(:-\)|:\)|\^_\^)", re.IGNORECASE), "joy"),
-    (re.compile(r"(:-\(|:\()", re.IGNORECASE), "sadness"),
+    (re.compile(r"(:-\(|:\()", re.IGNORECASE), "sad"),
     (re.compile(r"<3", re.IGNORECASE), "love"),
 ]
 

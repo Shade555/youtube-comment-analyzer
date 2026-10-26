@@ -24,7 +24,7 @@ def generate_analytics(predictions: List[dict]) -> dict:
             sarcastic_count += 1
             
         # Tally model routing
-        if p["emotion_model"] == "Pure Hindi":
+        if "Pure Hindi" in p["emotion_model"]:
             hindi_model_count += 1
         elif p["emotion_model"] == "Hinglish":
             hinglish_model_count += 1

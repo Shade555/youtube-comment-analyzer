@@ -11,8 +11,10 @@ interface CommentFiltersProps {
   setSortOrder: (val: string) => void;
 }
 
-// Full catalog of individual emotions supported by the NLP models (EmoInHindi 17 + Hinglish & Social Emojis)
+// Catalog of individual emotions supported by the new EmoInHindi model (17 classes + social emojis)
 const ALL_INDIVIDUAL_EMOTIONS = [
+  "Admiration",
+  "Amusement",
   "Anger",
   "Annoyed",
   "Anticipation",
@@ -27,31 +29,9 @@ const ALL_INDIVIDUAL_EMOTIONS = [
   "Hopeful",
   "Impressed",
   "Joy",
-  "Sad",
-  "Surprised",
-  "Admiration",
-  "Amusement",
-  "Annoyance",
-  "Approval",
-  "Caring",
-  "Curiosity",
-  "Desire",
-  "Disappointment",
-  "Disapproval",
-  "Disgust",
-  "Embarrassment",
-  "Excitement",
-  "Gratitude",
-  "Grief",
   "Love",
-  "Nervousness",
-  "Optimism",
-  "Pride",
-  "Realization",
-  "Relief",
-  "Remorse",
-  "Sadness",
-  "Surprise"
+  "Sad",
+  "Surprised"
 ];
 
 const POSITIVE_SET = new Set([

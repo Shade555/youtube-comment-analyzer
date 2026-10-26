@@ -7,8 +7,9 @@ from .emoji_handler import extract_emoji_emotions
 
 MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'model')
 
-# --- TOGGLE: Set to False if you want to analyze both Hindi and Hinglish comments ---
-ONLY_SHOW_HINDI = True
+# --- TOGGLE: Set to True if you want to ONLY analyze Devanagari Hindi comments.
+# Defaults to False so both Hindi (Devanagari) and Hinglish (Roman script) comments are analyzed.
+ONLY_SHOW_HINDI = os.getenv("ONLY_SHOW_HINDI", "false").lower() in ("true", "1", "yes")
 
 # Emotion polarity sets for consistency checking (EmoInHindi 17 classes + social emojis)
 POSITIVE_SET = {
@@ -59,7 +60,16 @@ def load_models():
         hindi_vectorizer = hindi_bundle["vectorizer"]
         hindi_model = hindi_bundle["model"]
         hindi_labels = hindi_bundle["labels"]
-        hindi_thresholds = np.asarray(hindi_bundle["thresholds"])
+        
+        # Check if thresholds.json exists for easy threshold fine-tuning
+        thresh_json_path = os.path.join(MODEL_DIR, "emoinhindi", "thresholds.json")
+        if os.path.exists(thresh_json_path):
+            with open(thresh_json_path, "r", encoding="utf-8") as f:
+                thresh_dict = json.load(f)
+            hindi_thresholds = np.asarray([thresh_dict.get(label, 0.0) for label in hindi_labels])
+        else:
+            hindi_thresholds = np.asarray(hindi_bundle["thresholds"])
+            
         print(f"Successfully loaded EmoInHindi bundle with {len(hindi_labels)} labels.")
             
         # 3. Load Sarcasm Model
@@ -181,7 +191,7 @@ def unified_predict(text: str) -> dict:
             
         return {
             "text": text,
-            "processed_text": processed,
+            "processed_text": processed if processed else text.strip(),
             "emotion_model": emotion_model_used,
             "emotions": emotions,
             "sarcasm_label": sarcasm_label,
@@ -191,7 +201,7 @@ def unified_predict(text: str) -> dict:
         print(f"Prediction error: {e}")
         return {
             "text": text,
-            "processed_text": "",
+            "processed_text": text.strip() if text else "",
             "emotion_model": "Error",
             "emotions": ["neutral"],
             "sarcasm_label": 0,
